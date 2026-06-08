@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=2.0, minimum-scale=0.5">
+	<title>PvZ3:E Decode Tool</title>
+	<link rel="icon" href="images/logo.png" type="image/png">
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+	<div class="container">
+		<h1>Plants vs Zombies™ 3: Evolved</h1>
+
+		<div class="card" id="suggestionCard">
+			<div class="main-card">
+				<h2>🧠 最优建议 🧠</h2>
+				<div class="suggestion-container" id="solverSlots">
+					<div class="suggestion-column">
+						<div class="suggestion-slot" id="slot1">
+							<img class="plant-image skeleton" id="img1" src="" alt="">
+							<span class="slot-value" id="s1">计算中</span>
+						</div>
+					</div>
+					<div class="suggestion-column">
+						<div class="suggestion-slot" id="slot2">
+							<img class="plant-image skeleton" id="img2" src="" alt="">
+							<span class="slot-value" id="s2">计算中</span>
+						</div>
+					</div>
+					<div class="suggestion-column">
+						<div class="suggestion-slot" id="slot3">
+							<img class="plant-image skeleton" id="img3" src="" alt="">
+							<span class="slot-value" id="s3">计算中</span>
+						</div>
+					</div>
+					<div class="suggestion-column">
+						<div class="suggestion-slot" id="slot4">
+							<img class="plant-image skeleton" id="img4" src="" alt="">
+							<span class="slot-value" id="s4">计算中</span>
+						</div>
+					</div>
+				</div>
+				<div style="text-align:center;">
+					<span class="possible-count">🎯 可用排列：<strong id="possibleCount">11880</strong></span>
+				</div>
+
+				<div class="divider"></div>
+
+				<h2>📋 解码反馈 🎮</h2>
+				<div class="feedback-container" id="feedbackGrid">
+				</div>
+				
+				<div class="btn-container">
+					<button class="btn-primary" id="submitFeedbackBtn" onclick="submitFeedback()">
+						<span>📤</span> 提交方案
+					</button>
+					<button class="btn-outline" onclick="resetSolver()">
+						<span>🔄</span> 重置
+					</button>
+				</div>
+				
+				<div id="solverMsg"></div>
+			</div>
+		</div>
+
+		<div class="card">
+			<h2>📜 解码历史</h2>
+			<div class="history-scroll">
+				<table class="history-table" id="solverHistoryTable">
+					<thead>
+						<tr>
+							<th>#</th><th>①</th><th>②</th><th>③</th><th>④</th>
+							<th>①</th><th>②</th><th>③</th><th>④</th><th>RC</th><th>操作</th>
+						</tr>
+					</thead>
+					<tbody id="solverHistoryBody"></tbody>
+				</table>
+			</div>
+			<p id="noSolverHistory" style="text-align:center;color:var(--text2);padding:16px;font-size:0.85rem;">暂无解码记录</p>
+		</div>
+
+		<div class="collapse-card">
+			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
+				<h2>📖 使用说明</h2>
+				<span class="collapse-arrow">▼</span>
+			</div>
+			<div class="collapse-content">
+				<div class="usage-steps">
+					<div class="usage-step">
+						<div class="step-number">1</div>
+						<div class="step-text">首次使用，将「最优建议」中的4个二阶植物，填入游戏里4个卡槽位置。</div>
+					</div>
+					<div class="usage-step">
+						<div class="step-number">2</div>
+						<div class="step-text">游戏会返回4个卡槽的结果（正确/错位/半对/全错），在「反馈区」选择对应结果。</div>
+					</div>
+					<div class="usage-step">
+						<div class="step-number">3</div>
+						<div class="step-text">点击「提交方案」按钮，系统会过滤错误方案，并给出新一轮的建议。</div>
+					</div>
+					<div class="usage-step">
+						<div class="step-number">4</div>
+						<div class="step-text">重复上述步骤，直到剩余排列为1，得到最终答案。</div>
+					</div>
+					<div class="usage-step">
+						<div class="step-number">5</div>
+						<div class="step-text">通常只需要2~4步，即可完成解码，通过游戏。</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="collapse-card">
+			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
+				<h2>📘 算法说明：Minimax + 信息熵</h2>
+				<span class="collapse-arrow">▼</span>
+			</div>
+			<div class="collapse-content">
+				<div class="algo-box" style="border-left:none;padding:0;margin-top:0;background:transparent;">
+					1. 维护所有与反馈一致的可能答案集合 <code>S</code>（初始11880种）<br>
+					2. 对候选猜测，计算其对 <code>S</code> 的反馈分区<br>
+					3. 选择<strong>最坏情况剩余最少</strong>的猜测（Minimax）<br>
+					4. 平局时选<strong>期望剩余最少</strong>（信息熵最大）的<br>
+					5. 收到反馈后更新 <code>S</code>，重复直至 <code>|S|=1</code>
+				</div>
+			</div>
+		</div>
+
+		<div class="collapse-card">
+			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
+				<h2>📚 合成图鉴</h2>
+				<span class="collapse-arrow">▼</span>
+			</div>
+			<div class="collapse-content">
+				<div class="synthesis-scroll">
+					<div class="synthesis-grid" id="synthesisGrid">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>鸭鸭内存工具</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style>
+html{zoom:1.1;}
+body{width:100%;height:100%;background:rgba(255,255,255,0.8);margin:0;}
+*{color:#000;font-size:11px;font-family:Arial,sans-serif;-webkit-tap-highlight-color:transparent;outline:none;}
+*:not(input,checkbox,textarea){-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;}
+input{background:transparent;height:22px;font-size:11px;}
+button{height:26px;color:#3393EF;background:#84848450;display:inline-block;cursor:pointer;text-align:center;text-decoration:none;outline:none;border:none;border-radius:4px;padding:0 6px;margin:2px 2px;font-size:11px;}
+button:active{background:#fff;transform:translateY(1px);}
+input[type=radio]{width:14px;height:14px;margin-right:4px;border:none;outline:none;-webkit-appearance:none;vertical-align:middle;border:1px solid #686868F0;border-radius:50%;margin:4px 2px;}
+input[type=radio]:checked{border:4px solid #2F7DCDF0;background:#E8E8E8;}
+input[type=checkbox]{visibility:hidden;vertical-align:middle;margin-bottom:2px;cursor:pointer;position:relative;width:18px;height:18px;}
+input[type=checkbox]::after{position:absolute;top:0;margin-top:2px;width:13px;height:13px;border:1px solid #686868;border-radius:3px;background:transparent;display:inline-block;visibility:visible;text-align:center;content:' ';}
+input[type=checkbox]:checked::after{content:"✓";color:#FFF;border-color:#B8B8B8;background:#4498F7;font-size:11px;font-weight:bold;}
+input[type=range]{-webkit-appearance:none;}
+input[type=range]:focus{outline:none;}
+input[type=range]::-webkit-slider-runnable-track{height:12px;cursor:pointer;background:#68686830;border-radius:1px;border:0.2px solid #010101;}
+input[type=range]::-webkit-slider-thumb{border:1px solid #000;height:16px;width:14px;border-radius:2px;background:#EEEEEEE0;cursor:pointer;-webkit-appearance:none;margin-top:-2px;}
+.menubox{display:inline;padding:4px;width:auto;height:18px;line-height:18px;text-align:center;background:#E8E8E890;border-radius:4px;font-size:11px;}
+.menubox.current{color:#E8E8E8;background:#848484;}
+.menuview{display:none;}
+.menuview.current{display:block;overflow-x:hidden;overflow-y:visible;}
+.scrollbar{overflow-x:hidden;overflow-y:visible;-webkit-overflow-scrolling:touch;}
+.scrollbar::-webkit-scrollbar{width:4px;height:4px;background:#F5F5F5;}
+.popup_container{position:absolute;z-index:1000;left:50%;top:0;}
+#popup_search_edit,#popup_progress{display:none;text-align:center;background:#FDFDFD;width:180px;border:1px solid #B8B8B880;border-radius:5px;padding:10px;position:absolute;left:-90px;}
+#popup_search_edit{height:240px;top:50px;}
+#popup_progress{height:20px;top:100px;z-index:2000;}
+#popup_loadscripts{display:none;text-align:center;background:#FDFDFD;width:220px;height:210px;position:absolute;left:-110px;top:20px;border:1px solid #B8B8B880;border-radius:5px;padding:10px;}
+#popup_proclist{display:none;text-align:center;background:#FDFDFD;width:170px;max-height:190px;position:absolute;left:-85px;top:50px;border:1px solid #B8B8B880;border-radius:5px;padding:10px;}
+#popup_proclist button{display:block;width:100%;height:24px;border-radius:2px;font-weight:bold;color:black;text-align:left;background:#00000005;}
+table.datatype{border-radius:2px;border-collapse:collapse;border-style:hidden;box-shadow:0 0 0 1px #3393EF;}
+.datatype td{cursor:hand;padding:4px;color:#3393EF;border:1px solid #3393EF;width:21px;height:15px;text-align:center;font-size:11px;}
+.datatype td.selected{color:white;background:#3393EF;}
+.maskview{display:none;position:absolute;left:0;top:0;width:100%;height:100%;background:#777;z-index:1;opacity:0.5;}
+#listdiv{display:block;overflow-x:hidden;overflow-y:scroll;height:100%;}
+#resultList{width:100%;cursor:pointer;table-layout:fixed;word-wrap:break-word;word-break:break-all;}
+#resultList tr.hilight td{color:#3393EF;}
+#resultList td{border-bottom:solid 1px #D1D1D1;font-size:11px;word-wrap:break-word;word-break:break-all;padding:3px 2px;}
+#resultList td font{font-size:11px;color:#848484;}
+#menuColumn{overflow-y:visible;height:100%;}
+</style>
+</head>
+<body bgcolor="#E8E8E8">
+<div id="titleBar" style="background:#D1D1D1;padding:4px;margin:0;height:14px;font-size:11px;">
+&nbsp;<font style="color:green">鸭鸭</font> <font style="color:red">内存工具</font>&nbsp;v1.0
+<span id="crossproc">
+<font style="color:blue">&nbsp;跨进程&nbsp;</font><font id="procname" pid="44557"> </font>
+</span>
+<div id="backToSearchBtn" style="float:right;font-size:14px;line-height:14px;display:none;margin-right:8px;cursor:pointer;">&nbsp;返回&nbsp;</div>
+<div id="closeMenu" style="float:right;font-size:14px;line-height:14px;display:none;" onclick="setWindowVisible(false)">&nbsp;X&nbsp;</div>
+</div>
+
+<table id="bodyView" width="100%" style="table-layout:fixed;height:calc(100% - 22px);">
+<tbody>
+<tr>
+<td id="menuColumn" style="vertical-align:top;width:145px;border-right:solid 2px #D1D1D1;padding:3px;">
+<div style="font-size:11px;line-height:1.2;">
+搜索下限:<input id="range_min" style="width:70px;padding-left:0;height:20px;" value="0x00000000"><br>
+搜索上限:<input id="range_max" style="width:70px;padding-left:0;height:20px;" value="0x200000000"><br>
+<label style="font-size:11px;"><input type="radio" name="numtype" value="signed" checked>有符号</label>
+<label style="font-size:11px;"><input type="radio" name="numtype" value="unsigned">无符号</label><br>
+<button onclick="onClickSearchNumber()">搜索数值</button>
+<button onclick="onClickSearchNearby()">邻近搜索</button><br>
+<button onclick="onClickValueIncreased()">增加了</button>
+<button onclick="onClickValueDecreased()">减少了</button><br>
+<button onclick="onClickClearResults()">清除</button>
+<button onclick="onClickEditTopHalf()">改上</button>
+<button onclick="onClickEditBottomHalf()">改下</button><br>
+<button onclick="onClickEditAll()">全改</button>
+<button onclick="onClickRefreshResults()">刷新</button>
+<button onclick="onShowLoadScript(true)">加载脚本</button><br>
+<button onclick="onClickViewMemory()">查看内存</button><br>
+邻近范围:<input id="nearby_range" style="width:60px;height:20px;" value="0x100"><br>
+浮点误差:<input id="float_tolerance" style="width:60px;height:20px;" value="0.0"><br>
+<p id="results_count" style="display:block;margin:4px 0;">共找到0条结果</p>
+</div>
+</td>
+<td style="vertical-align:top;">
+<div id="listdiv" class="scrollbar" ontouchend="showMoreResults(this);" onscroll="showMoreResults(this);">
+<table id="resultList" currentcount="200"><tbody></tbody></table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+
+<div id="maskview" class="maskview"></div>
+<div class="popup_container">
+<div id="popup_search_edit">
+<b id="titleBar">搜索数值</b><br><br>
+<center><table id="datatype" class="datatype"><tbody><tr>
+<td>F32</td><td>F64</td><td>I8</td><td>I16</td><td class="selected">I32</td><td>I64</td>
+</tr></tbody></table></center><br>
+<input type="text" id="datavalue" style="width:100%;border:none;font-size:11px;" placeholder="数值">
+<input type="text" id="dataaddress" style="width:100%;border:none;font-size:11px;margin-top:8px;display:none;" placeholder="内存地址" readonly>
+<hr style="margin:5px 0;"><br>
+<button id="cancel">取消</button>
+<button id="viewMemoryBtn" style="display:none;">查看内存</button>
+<button id="blurSearchBtn">模糊搜索</button>
+<button id="action">搜索数值</button>
+</div>
+
+<div id="popup_loadscripts">
+<center>
+<div class="menubox current" menu="localjs" onclick="refreshLocalSrcipts()">本地加载 ⟳</div>
+<div class="menubox" menu="netjs">网络加载</div>
+<div style="float:right;font-size:14px;" onclick="onShowLoadScript(false)">&nbsp;X&nbsp;</div>
+</center>
+<hr style="margin:5px 0;">
+<div id="localjs" class="menuview current scrollbar" style="height:180px">
+<table id="localjslist" style="width:100%;" border="1" cellspacing="0" cellpadding="0"><tbody></tbody></table>
+</div>
+<div id="netjs" class="menuview">
+<br><br>
+<input id="netjsurl" style="width:100%;font-size:11px;" placeholder="http/https 链接">
+<br><br><br><hr>
+<button onclick="onClickLoadScript($('#netjsurl').val(), 'js')">加载JS</button>
+<button onclick="onClickLoadScript($('#netjsurl').val(), 'h5');">加载H5</button>
+</div>
+</div>
+
+<div id="maskview_script" class="maskview"></div>
+<div id="popup_progress"><center>执行中...</center></div>
+<div id="popup_proclist">
+<center>选择目标<hr style="margin:5px 0;">
+<div id="proctable" class="scrollbar" style="min-height:50px;max-height:160px"></div>
+</center>
+</div>
+</div>
+
+<script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+<script>
+const DEFAULT_MEMORY_RANGE = 8000;
+const TYPE_BYTE_SIZE = {
+    "I8": 1, "U8": 1,
+    "I16": 2, "U16": 2,
+    "I32": 4, "U32": 4, "F32": 4,
+    "I64": 8, "U64": 8, "F64": 8
+};
+let originMemoryTargetAddress = null;
+let lastMemoryTargetAddress = null;
+let beforeMemoryState = null;
+let getResultsReverse = false;
+let lastSearchValue = null;
+let lastSearchType = null;
+
+function t(t){return $("input:radio[name=numtype]:checked").val()=="unsigned"?{"I8":"U8","I16":"U16","I32":"U32","I64":"U64"}[t]||t:t;}
+
+$(document).ready(function(){
+    document.body.onselectstart=document.body.ondrag=function(){return false;};
+    $("input").blur(function(){window.scroll(0,0);});
+    document.body.addEventListener("touchstart",function(){});
+    
+    $("div.menubox").click(function(){
+        $("div.menubox").removeClass("current");
+        $("div.menuview").removeClass("current");
+        $(this).addClass("current");
+        $("#"+$(this).attr("menu")).addClass("current");
+    });
+
+    $("#datavalue").focus(function(){
+        var e=$(this);e.attr("type","number");setTimeout(function(){e.attr("type","text");},500);
+    });
+
+    $("#crossproc").click(function(){$("#popup_proclist").show();$("#maskview").show();});
+    
+    if("undefined"!=typeof h5gg){
+        clearResultsInner();
+        setWindowDrag(0,0,400,80);
+        setLayoutAction(function(e,i){
+            var n=370,o=370;e<i&&(o=600);n=Math.min(n,e);o=Math.min(o,i);
+            var r=(e-n)/2,a=(i-o)/2;e<i&&(a=Math.max(20,a),o=Math.min(o,i-a));
+            setWindowRect(r,a,n,o);
+        });
+        var c=function(){
+            var e=h5gg.getProcList();
+            if(e){
+                refreshProcList(e);
+                $("#crossproc").show();
+                $("#closeMenu").hide();
+                if(!$("#procname").attr("pid")){$("#popup_proclist").show();$("#maskview").show();$("#procname").text("");}
+                if($("#procname").attr("pid")){
+                    var i=!1;
+                    for(var n=0;n<e.length;n++)if(e[n].pid==$("#procname").attr("pid")){i=!0;break;}
+                    if(!i){alert("目标进程已结束\n请重新选择");$("#procname").removeAttr("pid");$("#procname").text("");}
+                }
+            }else $("#crossproc").hide();
+        };
+        c();setInterval(c,1500);
+        initApiCompatible();
+    }
+
+    $("#resultList").on("click","tr",function(){
+        $("#resultList tr").removeClass("hilight");
+        $(this).addClass("hilight");
+        var e=$(this).attr("address"),i=$(this).attr("datatype"),n=$(this).attr("datavalue");
+        "undefined"!=typeof h5gg&&(n=h5gg.getValue(e,t(i)));
+        showPopView("修改",function(o,r){
+            h5gg.setValue(e,r,t(o))||alert("修改失败,地址可能失效!");
+            onClickRefreshResults();
+        },i,n,e,true,i);
+    });
+
+    $("#backToSearchBtn").click(function(){
+        if(!beforeMemoryState) return;
+        $("#resultList tbody").html(beforeMemoryState.resultHtml);
+        $("#resultList").attr("currentcount", beforeMemoryState.currentCount);
+        $("#resultList").removeAttr("data-memory-base");
+        $("#resultList").removeAttr("data-memory-type");
+        $("#results_count").text(beforeMemoryState.resultCountText);
+        beforeMemoryState.resultCountVisible ? $("#results_count").show() : $("#results_count").hide();
+        $(this).hide();
+        beforeMemoryState = null;
+
+        if(originMemoryTargetAddress){
+            $("#resultList tr").removeClass("hilight");
+            var targetTr = $("#resultList tr[address='"+originMemoryTargetAddress+"']");
+            if(targetTr.length > 0){
+                targetTr.addClass("hilight");
+                var container = $("#listdiv")[0];
+                var targetElement = targetTr[0];
+                container.scrollTop = targetElement.offsetTop - (container.clientHeight / 2) + (targetElement.clientHeight / 2);
+            }
+            originMemoryTargetAddress = null;
+            lastMemoryTargetAddress = null;
+        }
+    });
+});
+
+function initApiCompatible(){
+    try{
+        h5gg.searchNumber("9999999999", "I32", "0x0", "0x1000");
+        var test1 = h5gg.getResults(5, 0);
+        var test2 = h5gg.getResults(0, 5);
+        if(Array.isArray(test2) && !Array.isArray(test1)){
+            getResultsReverse = true;
+        }else{
+            getResultsReverse = false;
+        }
+        h5gg.clearResults();
+    }catch(e){}
+}
+
+function getResultsSafe(count, offset){
+    if(getResultsReverse){
+        return h5gg.getResults(offset, count);
+    }else{
+        return h5gg.getResults(count, offset);
+    }
+}
+
+function sleep(ms){
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function onClickValueIncreased(){
+    if($("#resultList").attr("data-memory-base")){
+        alert("此功能仅对搜索结果有效，内存查看模式下无法使用");
+        return;
+    }
+    if(!lastSearchValue || !lastSearchType){
+        alert("请先执行数值搜索后，再使用此功能");
+        return;
+    }
+    var totalCount = h5gg.getResultsCount();
+    if(totalCount <= 0){
+        alert("暂无搜索结果，请先搜索数值后再操作");
+        return;
+    }
+
+    const baseNum = Number(lastSearchValue);
+    const finalType = t(lastSearchType);
+    const isFloat = finalType === "F32" || finalType === "F64";
+    const isUnsigned = finalType.startsWith("U");
+
+    let minValue, maxValue;
+    if(isFloat){
+        minValue = baseNum + 0.000001;
+        maxValue = 9999999999.0;
+    }else{
+        minValue = baseNum + 1;
+        maxValue = isUnsigned ? 4294967295 : 9999999999;
+    }
+
+    $("#popup_progress").show();
+    onClickRefreshResults();
+    
+    setTimeout(()=>{
+        try{
+            h5gg.setFloatTolerance($("#float_tolerance").val());
+            h5gg.searchNumber(`${minValue}～${maxValue}`, finalType, $("#range_min").val(), $("#range_max").val());
+            lastSearchValue = String(minValue);
+            onClickRefreshResults(true);
+            $("#popup_progress").hide();
+        }catch(e){
+            $("#popup_progress").hide();
+            alert("增量搜索失败：" + e.message);
+        }
+    }, 300);
+}
+
+function onClickValueDecreased(){
+    if($("#resultList").attr("data-memory-base")){
+        alert("此功能仅对搜索结果有效，内存查看模式下无法使用");
+        return;
+    }
+    if(!lastSearchValue || !lastSearchType){
+        alert("请先执行数值搜索后，再使用此功能");
+        return;
+    }
+    var totalCount = h5gg.getResultsCount();
+    if(totalCount <= 0){
+        alert("暂无搜索结果，请先搜索数值后再操作");
+        return;
+    }
+
+    const baseNum = Number(lastSearchValue);
+    const finalType = t(lastSearchType);
+    const isFloat = finalType === "F32" || finalType === "F64";
+    const isUnsigned = finalType.startsWith("U");
+
+    let minValue, maxValue;
+    if(isFloat){
+        maxValue = baseNum - 0.000001;
+        minValue = -9999999999.0;
+    }else{
+        maxValue = baseNum - 1;
+        minValue = isUnsigned ? 0 : -9999999999;
+    }
+
+    if(maxValue < minValue){
+        alert("当前类型下没有符合「减少了」条件的数值");
+        return;
+    }
+
+    $("#popup_progress").show();
+    onClickRefreshResults();
+    
+    setTimeout(()=>{
+        try{
+            h5gg.setFloatTolerance($("#float_tolerance").val());
+            h5gg.searchNumber(`${minValue}～${maxValue}`, finalType, $("#range_min").val(), $("#range_max").val());
+            lastSearchValue = String(maxValue);
+            onClickRefreshResults(true);
+            $("#popup_progress").hide();
+        }catch(e){
+            $("#popup_progress").hide();
+            alert("减量搜索失败：" + e.message);
+        }
+    }, 300);
+}
+
+async function batchModifyResults(startIndex, endIndex, modifyType, modifyValue){
+    var totalCount = h5gg.getResultsCount();
+    if(totalCount <= 0){
+        alert("暂无搜索结果，无法执行修改");
+        return;
+    }
+    if(startIndex >= totalCount){
+        return;
+    }
+
+    endIndex = Math.min(endIndex, totalCount);
+    var modifyCount = endIndex - startIndex;
+    var finalType = t(modifyType);
+
+    var resultList = getResultsSafe(modifyCount, startIndex);
+    if(!Array.isArray(resultList) || resultList.length <= 0){
+        alert("获取结果失败，无法执行修改");
+        return;
+    }
+
+    $("#popup_progress").show();
+
+    var successCount = 0;
+    var batchSize = 10;
+
+    for(var i=0; i<resultList.length; i+=batchSize){
+        var batchEnd = Math.min(i+batchSize, resultList.length);
+        for(var j=i; j<batchEnd; j++){
+            var item = resultList[j];
+            if(!item || !item.address) continue;
+            try{
+                var isSuccess = h5gg.setValue(item.address, modifyValue, finalType);
+                if(isSuccess) successCount++;
+            }catch(e){}
+        }
+        await sleep(1);
+    }
+
+    $("#popup_progress").hide();
+    onClickRefreshResults();
+    alert("成功修改 "+successCount+" 个数据");
+}
+
+function onClickEditTopHalf(){
+    if($("#resultList").attr("data-memory-base")){
+        alert("此功能仅对搜索结果有效，内存查看模式下无法使用");
+        return;
+    }
+    var totalCount = h5gg.getResultsCount();
+    if(totalCount <= 0){
+        alert("暂无搜索结果，请先搜索数值后再操作");
+        return;
+    }
+    var halfCount = Math.floor(totalCount / 2);
+    if(halfCount <= 0){
+        alert("结果数量过少，无法执行改上操作");
+        return;
+    }
+    showPopView("修改前半部分", function(selectedType, inputValue){
+        if(inputValue === "" || inputValue === null || inputValue === undefined){
+            alert("请输入要修改的数值");
+            return;
+        }
+        batchModifyResults(0, halfCount, selectedType, inputValue);
+    });
+}
+
+function onClickEditBottomHalf(){
+    if($("#resultList").attr("data-memory-base")){
+        alert("此功能仅对搜索结果有效，内存查看模式下无法使用");
+        return;
+    }
+    var totalCount = h5gg.getResultsCount();
+    if(totalCount <= 0){
+        alert("暂无搜索结果，请先搜索数值后再操作");
+        return;
+    }
+    var startIndex = Math.floor(totalCount / 2);
+    var endIndex = totalCount;
+    var modifyCount = endIndex - startIndex;
+    if(modifyCount <= 0){
+        alert("结果数量过少，无法执行改下操作");
+        return;
+    }
+    showPopView("修改后半部分", function(selectedType, inputValue){
+        if(inputValue === "" || inputValue === null || inputValue === undefined){
+            alert("请输入要修改的数值");
+            return;
+        }
+        batchModifyResults(startIndex, endIndex, selectedType, inputValue);
+    });
+}
+
+function clearResultsInner(){
+    $("#datavalue").val("");
+    $("#results_count").hide();
+    $("#resultList tr").remove();
+    $("#resultList").attr("currentcount",0);
+    $("#resultList").removeAttr("data-memory-base");
+    $("#resultList").removeAttr("data-memory-type");
+    "undefined"!=typeof h5gg&&h5gg.clearResults();
+    $("#backToSearchBtn").hide();
+    lastSearchValue = null;
+    lastSearchType = null;
+    beforeMemoryState = null;
+    originMemoryTargetAddress = null;
+    lastMemoryTargetAddress = null;
+}
+
+function onClickClearResults(){
+    var isConfirm = confirm("您确定要清除所有搜索结果吗？此操作不可恢复。");
+    if(!isConfirm) return;
+    clearResultsInner();
+}
+
+function refreshProcList(e){
+    $("#proctable button").remove();
+    for(var i=0;i<e.length;i++){
+        var n=e[i],o=$("<button>"+n.name+"</button>");
+        o.attr("pid",n.pid);
+        o.click(function(){
+            h5gg.setTargetProc($(this).attr("pid"))?(clearResultsInner(),$("#procname").attr("pid",$(this).attr("pid")),$("#procname").text($(this).text()),$("#popup_proclist").hide(),$("#maskview").hide()):alert("无法选定该目标");
+        });
+        $("#proctable").append(o);
+    }
+}
+
+function refreshLocalSrcipts(){
+    $("#localjslist tr").remove();
+    var e=h5gg.getLocalScripts();
+    setTimeout(function(){
+        0==e.length&&$("#localjslist tbody").append("<tr><td colspan=2>未找到 js/html 文件</td></tr>");
+        $("#localjslist tbody").append('<tr><td style="border-right-style:none;color:blue;font-size:11px;">从文件管理器选择</td><td style="border-left-style:none;width:42px"><button onclick="h5gg.pickScriptFile(onClickLoadScript)">浏览</button></td></tr>');
+        for(var i=0;i<e.length;i++){
+            var n=e[i],o='<tr><td style="border-right-style:none;font-weight:bold;color:green;font-size:11px;">'+n.name+'</td><td style="border-left-style:none;width:42px"><button onclick="onClickLoadScript(\''+n.path+'\')">加载</button></td></tr>';
+            $("#localjslist tbody").append(o);
+        }
+    },300);
+}
+
+function onShowLoadScript(e){
+    e?($("#maskview").show(),$("#popup_loadscripts").show(),"undefined"!=typeof h5gg&&refreshLocalSrcipts()):($("#maskview").hide(),$("#popup_loadscripts").hide());
+}
+
+function onClickLoadScript(e,i){
+    if(!e)return;
+    /^\w+\:/.test(e)||(e="file://"+e);
+    try{var n=new URL(e);n.searchParams.append("_",Math.random());}catch(o){alert("无效URL");return;}
+    $("#popup_progress").show();$("#maskview_script").show();
+    if("h5"==i||!i&&!/\.js$/.test(n.pathname)){window.location=n.href;return;}
+    var r=document.createElement("script");
+    r.type="text/javascript";
+    r.onload=function(){alert("执行成功");$("#popup_progress").hide();$("#maskview_script").hide();};
+    r.onerror=function(){alert("加载失败");$("#popup_progress").hide();$("#maskview_script").hide();};
+    r.src=n.href;document.body.appendChild(r);
+}
+
+function showPopView(title,confirmCallback,dataType,defaultValue,address,showAddress=false,currentDataType=null,placeholderText="数值",showBlurBtn=true){
+    $("#maskview").show();$("#popup_search_edit").show();
+    $("#popup_search_edit").find("B#titleBar").text(title);
+    $("#popup_search_edit").find("button#action").text(title);
+    if(dataType)$("#datatype td").each(function(){$(this).text()==dataType?$(this).addClass("selected"):$(this).removeClass("selected");});
+    $("#datavalue").val(defaultValue).attr("placeholder", placeholderText);
+    
+    if(!showBlurBtn){
+        $("#blurSearchBtn").hide();
+    }else{
+        $("#blurSearchBtn").show();
+    }
+
+    if(showAddress && address){
+        $("#dataaddress").val(address).show();
+        $("#viewMemoryBtn").show();
+        $("#viewMemoryBtn").unbind("click").click(function(){
+            const isInMemoryMode = !!$("#resultList").attr("data-memory-base");
+            if(!isInMemoryMode){
+                var hilightTr = $("#resultList tr.hilight");
+                if(hilightTr.length > 0){
+                    originMemoryTargetAddress = hilightTr.attr("address");
+                    lastMemoryTargetAddress = originMemoryTargetAddress;
+                }
+            }
+            $("#popup_search_edit").hide();
+            $("#maskview").hide();
+            var finalType = $("#datatype td.selected").text();
+            renderMemoryList(address, finalType);
+        });
+    }else{
+        $("#dataaddress").hide().val("");
+        $("#viewMemoryBtn").hide();
+    }
+    $("#datavalue").focus();
+
+    function updateBlurBtnState(){
+        if(!showBlurBtn) return;
+        let hasData = false;
+        if(typeof h5gg !== "undefined") hasData = h5gg.getResultsCount() > 0;
+        let inputEmpty = $("#datavalue").val().trim() === "";
+        let canBlur = inputEmpty && !hasData;
+        $("#blurSearchBtn").prop("disabled", !canBlur).css("opacity", canBlur ? 1 : 0.5);
+    }
+
+    if(showBlurBtn){
+        $("#datavalue").off("input").on("input", updateBlurBtnState);
+        setTimeout(updateBlurBtnState, 50);
+
+        $("#blurSearchBtn").unbind("click").click(function() {
+            var selectedType = $("#datatype td.selected").text();
+            if (!selectedType) {
+                alert("请选择数据类型");
+                return;
+            }
+            $("#popup_search_edit").hide();
+            $("#popup_progress").show();
+            setTimeout(function() {
+                try {
+                    clearResultsInner();
+                    var realType = t(selectedType);
+                    h5gg.setFloatTolerance($("#float_tolerance").val());
+                    h5gg.searchNumber("0~9999999999", realType, "0x00000000", "0x300000000");
+                    lastSearchValue = "0~9999999999";
+                    lastSearchType = selectedType;
+                    onClickRefreshResults(true);
+                } catch (e) {
+                    alert("模糊搜索失败：" + e.message);
+                } finally {
+                    $("#popup_progress").hide();
+                    $("#maskview").hide();
+                }
+            }, 200);
+        });
+    }
+
+    $("#popup_search_edit").find("button#action").unbind("click").click(function(){
+        var selectedType=$("#datatype td.selected").text(),inputValue=$("#datavalue").val();
+        $("#popup_search_edit").hide();$("#popup_progress").show();
+        setTimeout(function(){
+            confirmCallback(selectedType,inputValue);
+            $("#popup_progress").hide();$("#maskview").hide();
+        },200);
+    });
+    $("#popup_search_edit").find("button#cancel").unbind("click").click(function(){
+        $("#maskview").hide();
+        $("#popup_search_edit").hide();
+    });
+    $("#datatype td").unbind("click").click(function(){
+        $("#datatype td").removeClass("selected");
+        $(this).addClass("selected");
+        $("#datavalue").focus();
+    });
+}
+
+function renderMemoryList(baseAddress, dataType){
+    var baseAddr = Number(baseAddress);
+    var byteSize = TYPE_BYTE_SIZE[dataType] || 4;
+    var offsetCount = Math.floor((DEFAULT_MEMORY_RANGE / 2) / byteSize);
+
+    const isInMemoryMode = !!$("#resultList").attr("data-memory-base");
+    if(!isInMemoryMode){
+        beforeMemoryState = {
+            resultHtml: $("#resultList tbody").html(),
+            currentCount: $("#resultList").attr("currentcount"),
+            resultCountText: $("#results_count").text(),
+            resultCountVisible: $("#results_count").is(":visible")
+        };
+    }
+
+    $("#datavalue").val("");
+    $("#results_count").hide();
+    $("#resultList tr").remove();
+    $("#resultList").attr("currentcount",0);
+    $("#resultList").removeAttr("data-memory-base");
+    $("#resultList").removeAttr("data-memory-type");
+
+    $("#resultList").attr("data-memory-base", baseAddress);
+    $("#resultList").attr("data-memory-type", dataType);
+    $("#backToSearchBtn").show();
+
+    for(var c = offsetCount; c >= 1; c--){
+        var offset = byteSize * c;
+        var currentAddr = baseAddr - offset;
+        var currentAddrHex = "0x" + currentAddr.toString(16).toUpperCase();
+        var value = h5gg.getValue(currentAddrHex, t(dataType));
+        var html = '<tr address="'+currentAddrHex+'" datatype="'+dataType+'" datavalue="'+value+'"><td>'+currentAddrHex+' (-'+offset+')<br/><font>'+value+'</font></td></tr>';
+        $("#resultList tbody").append(html);
+    }
+
+    var baseValue = h5gg.getValue(baseAddress, t(dataType));
+    var baseHtml = '<tr id="memory_base_addr" address="'+baseAddress+'" datatype="'+dataType+'" datavalue="'+baseValue+'"><td>'+baseAddress+' (+0)<br/><font>'+baseValue+'</font></td></tr>';
+    $("#resultList tbody").append(baseHtml);
+
+    for(var c = 1; c <= offsetCount; c++){
+        var offset = byteSize * c;
+        var currentAddr = baseAddr + offset;
+        var currentAddrHex = "0x" + currentAddr.toString(16).toUpperCase();
+        var value = h5gg.getValue(currentAddrHex, t(dataType));
+        var html = '<tr address="'+currentAddrHex+'" datatype="'+dataType+'" datavalue="'+value+'"><td>'+currentAddrHex+' (+'+offset+')<br/><font>'+value+'</font></td></tr>';
+        $("#resultList tbody").append(html);
+    }
+
+    var totalCount = $("#resultList tr").length;
+    $("#results_count").text("共找到"+totalCount+"条结果").show();
+
+    requestAnimationFrame(() => {
+        var baseElement = document.getElementById("memory_base_addr");
+        var container = document.getElementById("listdiv");
+        if(baseElement && container){
+            var containerHeight = container.clientHeight;
+            var elementOffsetTop = baseElement.offsetTop;
+            container.scrollTop = elementOffsetTop - (containerHeight / 2) + (baseElement.clientHeight / 2);
+        }
+    });
+}
+
+function loadResults(e,i){
+    var n=getResultsSafe(i,e);
+    for(var o=0;o<n.length;o++){
+        ("F32"==n[o].type||"F64"==n[o].type)&&(n[o].value="("+n[o].value+")");
+        var r='<tr address="'+n[o].address+'" datatype="'+n[o].type+'" datavalue="'+n[o].value+'"><td>'+(e+o+1)+'. '+n[o].address+'<br/><font>'+n[o].value+'</font></td></tr>';
+        $("#resultList tbody").append(r);
+    }
+}
+
+function onClickRefreshResults(e){
+    var memoryBase = $("#resultList").attr("data-memory-base");
+    var memoryType = $("#resultList").attr("data-memory-type");
+    if(memoryBase && memoryType){
+        renderMemoryList(memoryBase, memoryType);
+        return;
+    }
+    $("#resultList tr").remove();
+    var totalResults = h5gg.getResultsCount();
+    $("#results_count").text("共找到"+totalResults+"条结果").show();
+    var loadCount = Math.min(totalResults, 100);
+    $("#resultList").attr("currentcount", loadCount);
+    if(loadCount > 0){
+        loadResults(0, loadCount);
+    }
+    if(e){
+        $("#listdiv").get(0).scroll(0,0);
+    }
+}
+
+function loadMoreResults(){
+    var totalCount = h5gg.getResultsCount();
+    var currentCount = Number($("#resultList").attr("currentcount"));
+    if(currentCount >= totalCount) return;
+    var nextLoadCount = Math.min(100, totalCount - currentCount);
+    $("#resultList").attr("currentcount", currentCount + nextLoadCount);
+    loadResults(currentCount, nextLoadCount);
+}
+
+function showMoreResults(e){
+    if(e.scrollHeight - e.scrollTop - e.clientHeight < 50){
+        loadMoreResults();
+    }
+}
+
+function onClickEditAll(){
+    showPopView("修改全部",function(e,i){
+        var n=h5gg.editAll(i,t(e));
+        onClickRefreshResults();
+        alert("成功修改 "+n+" 个数据");
+    });
+}
+
+function onClickSearchNumber(){
+    showPopView("搜索数值",function(e,i){
+        $("#backToSearchBtn").hide();
+        beforeMemoryState = null;
+        originMemoryTargetAddress = null;
+        lastMemoryTargetAddress = null;
+        $("#resultList").removeAttr("data-memory-base");
+        $("#resultList").removeAttr("data-memory-type");
+        lastSearchValue = i;
+        lastSearchType = e;
+
+        h5gg.setFloatTolerance($("#float_tolerance").val());
+        h5gg.searchNumber(i,t(e),$("#range_min").val(),$("#range_max").val());
+        onClickRefreshResults(!0);
+    },null,null,null,false,null,"数值",true);
+}
+
+function onClickViewMemory(){
+    var currentSelectedType = $("#datatype td.selected").text();
+    showPopView("查看内存",function(e,i){
+        var inputAddr = i.trim();
+        if(!/^0x[0-9a-fA-F]+$/.test(inputAddr)){
+            alert("请输入以0x开头的规范十六进制内存地址");
+            return;
+        }
+        var addrNum = Number(inputAddr);
+        if(isNaN(addrNum) || !Number.isInteger(addrNum) || addrNum < 0){
+            alert("请输入有效的十六进制内存地址");
+            return;
+        }
+        originMemoryTargetAddress = null;
+        lastMemoryTargetAddress = null;
+        renderMemoryList(inputAddr, e);
+    }, currentSelectedType, null, null, false, null, "0x开头的十六进制地址",false);
+}
+
+function onClickSearchNearby(){
+    showPopView("搜索附近数值",function(e,i){
+        $("#backToSearchBtn").hide();
+        beforeMemoryState = null;
+        originMemoryTargetAddress = null;
+        lastMemoryTargetAddress = null;
+        $("#resultList").removeAttr("data-memory-base");
+        $("#resultList").removeAttr("data-memory-type");
+        lastSearchValue = i;
+        lastSearchType = e;
+
+        h5gg.setFloatTolerance($("#float_tolerance").val());
+        h5gg.searchNearby(i, t(e), $("#nearby_range").val());
+        onClickRefreshResults(!0);
+    },null,null,null,false,null,"数值",false);
+}
+</script>
+</body>
+</html>

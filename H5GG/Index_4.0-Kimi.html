@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="default">
+	<title>H5GG</title>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<style>
+		:root {
+			--ios-bg: rgba(249, 249, 251, 0.85);
+			--ios-surface: rgba(255, 255, 255, 0.72);
+			--ios-surface-elevated: rgba(255, 255, 255, 0.85);
+			--ios-border: rgba(120, 120, 128, 0.16);
+			--ios-separator: rgba(60, 60, 67, 0.08);
+			--ios-text: #000000;
+			--ios-text-secondary: rgba(60, 60, 67, 0.6);
+			--ios-text-tertiary: rgba(60, 60, 67, 0.3);
+			--ios-blue: #007AFF;
+			--ios-green: #34C759;
+			--ios-red: #FF3B30;
+			--ios-orange: #FF9500;
+			--ios-capsule-bg: rgba(120, 120, 128, 0.12);
+			--ios-capsule-bg-active: rgba(120, 120, 128, 0.24);
+			--blur: 20px;
+			--radius-sm: 4px;
+			--radius-md: 6px;
+			--radius-lg: 8px;
+			--radius-xl: 12px;
+		}
+
+		@media (prefers-color-scheme: dark) {
+			:root {
+				--ios-bg: rgba(0, 0, 0, 0.85);
+				--ios-surface: rgba(28, 28, 30, 0.72);
+				--ios-surface-elevated: rgba(44, 44, 46, 0.85);
+				--ios-border: rgba(84, 84, 88, 0.4);
+				--ios-separator: rgba(84, 84, 88, 0.24);
+				--ios-text: #FFFFFF;
+				--ios-text-secondary: rgba(235, 235, 245, 0.6);
+				--ios-text-tertiary: rgba(235, 235, 245, 0.3);
+				--ios-blue: #0A84FF;
+				--ios-green: #30D158;
+				--ios-red: #FF453A;
+				--ios-orange: #FF9F0A;
+				--ios-capsule-bg: rgba(120, 120, 128, 0.24);
+				--ios-capsule-bg-active: rgba(120, 120, 128, 0.40);
+			}
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			-webkit-tap-highlight-color: transparent;
+			outline: none;
+			font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+			letter-spacing: -0.01em;
+		}
+
+		html {
+			zoom: 1.0;
+			height: 100%;
+			font-size: 100%;
+		}
+
+		body {
+			width: 100%;
+			height: 100%;
+			background: var(--ios-bg);
+			color: var(--ios-text);
+			overflow: hidden;
+			position: relative;
+		}
+
+		.glass {
+			background: var(--ios-surface);
+			backdrop-filter: saturate(180%) blur(var(--blur));
+			-webkit-backdrop-filter: saturate(180%) blur(var(--blur));
+			border: 0.5px solid var(--ios-border);
+		}
+
+		.glass-elevated {
+			background: var(--ios-surface-elevated);
+			backdrop-filter: saturate(180%) blur(var(--blur));
+			-webkit-backdrop-filter: saturate(180%) blur(var(--blur));
+			border: 0.5px solid var(--ios-border);
+			box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+		}
+
+		.app-container {
+			width: 100%;
+			height: 100%;
+			display: flex;
+			flex-direction: column;
+			position: relative;
+		}
+
+		.top-nav {
+			padding: 6px 8px;
+			padding-top: max(6px, env(safe-area-inset-top));
+			display: flex;
+			justify-content: center;
+			z-index: 100;
+			position: relative;
+		}
+
+		.nav-capsule {
+			display: flex;
+			background: var(--ios-capsule-bg);
+			border-radius: var(--radius-xl);
+			padding: 1px;
+			gap: 1px;
+		}
+
+		.nav-item {
+			padding: 4px 8px;
+			border-radius: var(--radius-xl);
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			cursor: pointer;
+			transition: all 0.25s;
+			background: transparent;
+			border: none;
+			white-space: nowrap;
+		}
+
+		.nav-item.active {
+			background: var(--ios-blue);
+			color: white;
+			box-shadow: 0 1px 4px rgba(0, 122, 255, 0.3);
+		}
+
+		.content-area {
+			flex: 1;
+			overflow: hidden;
+			position: relative;
+		}
+
+		.page {
+			display: none;
+			width: 100%;
+			height: 100%;
+			flex-direction: column;
+			padding: 0 8px 20px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.page.active {
+			display: flex;
+		}
+
+		.page-title {
+			font-size: 14px;
+			font-weight: 700;
+			margin: 4px 0 8px;
+			color: var(--ios-text);
+		}
+
+		.card {
+			border-radius: var(--radius-lg);
+			margin-bottom: 6px;
+			overflow: hidden;
+		}
+
+		.card-section {
+			padding: 6px 8px;
+			border-bottom: 0.5px solid var(--ios-separator);
+		}
+
+		.card-section:last-child {
+			border-bottom: none;
+		}
+
+		.process-list {
+			flex: 1;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+
+		.process-item {
+			display: flex;
+			align-items: center;
+			padding: 6px 8px;
+			border-bottom: 0.5px solid var(--ios-separator);
+			cursor: pointer;
+			transition: background 0.2s;
+		}
+
+		.process-item:last-child {
+			border-bottom: none;
+		}
+
+		.process-item:active {
+			background: var(--ios-capsule-bg);
+		}
+
+		.process-item.selected {
+			background: rgba(0, 122, 255, 0.08);
+		}
+
+		.process-icon {
+			width: 18px;
+			height: 18px;
+			border-radius: 5px;
+			background: var(--ios-capsule-bg);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			margin-right: 6px;
+			font-size: 12px;
+			color: var(--ios-blue);
+		}
+
+		.process-info {
+			flex: 1;
+		}
+
+		.process-name {
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+		}
+
+		.process-id {
+			font-size: 6px;
+			color: var(--ios-text-secondary);
+			margin-top: 1px;
+		}
+
+		.process-check {
+			color: var(--ios-blue);
+			font-size: 9px;
+			opacity: 0;
+			transition: opacity 0.2s;
+		}
+
+		.process-item.selected .process-check {
+			opacity: 1;
+		}
+
+		.search-header {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			margin-bottom: 6px;
+		}
+
+		.search-input-row {
+			display: flex;
+			gap: 4px;
+			align-items: center;
+		}
+
+		.ios-input {
+			flex: 1;
+			height: 22px;
+			max-width: 62%;
+			padding: 0 7px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-capsule-bg);
+			font-size: 12px;
+			color: var(--ios-text);
+			transition: all 0.2s;
+		}
+
+		.ios-input:focus {
+			background: var(--ios-surface-elevated);
+			box-shadow: 0 0 0 1px var(--ios-blue);
+		}
+
+		.ios-input::placeholder {
+			color: var(--ios-text-tertiary);
+		}
+
+		.icon-btn-row {
+			display: flex;
+			gap: 4px;
+			flex-wrap: wrap;
+		}
+
+		.icon-btn {
+			width: 22px;
+			height: 22px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-capsule-bg);
+			color: var(--ios-blue);
+			font-size: 12px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: all 0.2s;
+		}
+
+		.icon-btn:active {
+			transform: scale(0.92);
+			background: var(--ios-capsule-bg-active);
+		}
+
+		.icon-btn.primary {
+			background: var(--ios-blue);
+			color: white;
+			flex: 1;
+			max-width: 50px;
+			font-size: 12px;
+			font-weight: 600;
+			gap: 3px;
+		}
+
+		.type-selector {
+			display: flex;
+			margin: 0 77px;
+			max-width: 200px;
+			gap: 2px;
+			padding: 2px;
+			background: var(--ios-capsule-bg);
+			border-radius: var(--radius-lg);
+			flex-direction: row;
+			flex-wrap: nowrap;
+			align-content: center;
+			justify-content: center;
+			align-items: center;
+		}
+
+		.type-btn {
+			flex: 1;
+			max-width: 30px;
+			height: 18px;
+			border: none;
+			border-radius: var(--radius-md);
+			background: transparent;
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			cursor: pointer;
+			transition: all 0.25s;
+		}
+
+		.type-btn.active {
+			background: var(--ios-blue);
+			color: white;
+			box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
+		}
+
+		.results-container {
+			flex: 1;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			border-radius: var(--radius-lg);
+			margin-top: 2px;
+		}
+
+		.result-item {
+			display: flex;
+			align-items: center;
+			padding: 6px 8px;
+			border-bottom: 0.5px solid var(--ios-separator);
+			cursor: pointer;
+			transition: background 0.15s;
+			position: relative;
+		}
+
+		.result-item:last-child {
+			border-bottom: none;
+		}
+
+		.result-item:active {
+			background: var(--ios-capsule-bg);
+		}
+
+		.result-index {
+			font-size: 12px;
+			color: var(--ios-text-tertiary);
+			width: 16px;
+			text-align: center;
+			margin-right: 4px;
+		}
+
+		.result-content {
+			flex: 1;
+		}
+
+		.result-address {
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			font-family: "SF Mono", Menlo, monospace;
+		}
+
+		.result-value {
+			font-size: 12px;
+			color: var(--ios-text-secondary);
+			margin-top: 1px;
+			font-family: "SF Mono", Menlo, monospace;
+		}
+
+		.result-type {
+			font-size: 10px;
+			padding: 1.5px 4px;
+			border-radius: 3px;
+			background: var(--ios-capsule-bg);
+			color: var(--ios-text-secondary);
+			margin-left: 4px;
+		}
+
+		.result-actions {
+			display: flex;
+			gap: 4px;
+			margin-left: 4px;
+		}
+
+		.result-action-btn {
+			width: 22px;
+			height: 22px;
+			border-radius: 4px;
+			border: none;
+			background: var(--ios-capsule-bg);
+			color: var(--ios-blue);
+			font-size: 12px;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.result-action-btn:active {
+			background: var(--ios-capsule-bg-active);
+		}
+
+		.results-count {
+			text-align: center;
+			padding: 4px;
+			font-size: 10px;
+			color: var(--ios-text-secondary);
+		}
+
+		.memory-header {
+			margin-bottom: 6px;
+		}
+
+		.memory-list {
+			flex: 1;
+			margin-top: 2px;
+			overflow-y: auto;
+			-webkit-overflow-scrolling: touch;
+			border-radius: var(--radius-lg);
+		}
+
+		.memory-item {
+			display: flex;
+			align-items: center;
+			padding: 6px 8px;
+			border-bottom: 0.5px solid var(--ios-separator);
+			cursor: pointer;
+			transition: background 0.15s;
+		}
+
+		.memory-item:last-child {
+			border-bottom: none;
+		}
+
+		.memory-item:active {
+			background: var(--ios-capsule-bg);
+		}
+
+		.memory-item.current {
+			background: rgba(0, 122, 255, 0.12);
+		}
+
+		.memory-offset {
+			font-size: 6px;
+			color: var(--ios-text-tertiary);
+			width: 40px;
+			font-family: "SF Mono", Menlo, monospace;
+		}
+
+		.memory-address {
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			font-family: "SF Mono", Menlo, monospace;
+			width: 70px;
+		}
+
+		.memory-value {
+			flex: 1;
+			font-size: 12px;
+			color: var(--ios-text-secondary);
+			font-family: "SF Mono", Menlo, monospace;
+			text-align: right;
+		}
+
+		.memory-type {
+			font-size: 5.5px;
+			padding: 1.5px 4px;
+			border-radius: 3px;
+			background: var(--ios-capsule-bg);
+			color: var(--ios-text-secondary);
+			margin-left: 4px;
+		}
+
+		.settings-tabs {
+			display: inline-flex;
+			gap: 4px;
+			margin-bottom: 8px;
+			padding: 2px;
+			background: var(--ios-capsule-bg);
+			border-radius: var(--radius-lg);
+			align-self: center;
+		}
+
+		.settings-tab {
+			padding: 4px 12px;
+			border: none;
+			border-radius: var(--radius-md);
+			background: transparent;
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			cursor: pointer;
+			transition: all 0.25s;
+		}
+
+		.settings-tab.active {
+			background: var(--ios-blue);
+			color: white;
+		}
+
+		.settings-content {
+			flex: 1;
+			overflow-y: auto;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.settings-page {
+			display: none;
+			width: 100%;
+			max-width: 300px;
+		}
+
+		.settings-page.active {
+			display: block;
+		}
+
+		.setting-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 7px 8px;
+			border-bottom: 0.5px solid var(--ios-separator);
+		}
+
+		.setting-item:last-child {
+			border-bottom: none;
+		}
+
+		.setting-label {
+			font-size: 12px;
+			color: var(--ios-text);
+		}
+
+		.setting-value {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+		}
+
+		.setting-input {
+			width: 60px;
+			height: 16px;
+			padding: 0 5px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-capsule-bg);
+			font-size: 12px;
+			color: var(--ios-text);
+			text-align: right;
+			font-family: "SF Mono", Menlo, monospace;
+		}
+
+		.setting-input:focus {
+			background: var(--ios-surface-elevated);
+			box-shadow: 0 0 0 1px var(--ios-blue);
+		}
+
+		.slider-container {
+			padding: 6px 8px;
+		}
+
+		.slider-label {
+			display: flex;
+			justify-content: space-between;
+			margin-bottom: 4px;
+			font-size: 12px;
+			color: var(--ios-text-secondary);
+		}
+
+		.ios-slider {
+			width: 100%;
+			height: 2px;
+			border-radius: 1px;
+			background: var(--ios-capsule-bg);
+			-webkit-appearance: none;
+			outline: none;
+		}
+
+		.ios-slider::-webkit-slider-thumb {
+			-webkit-appearance: none;
+			width: 12px;
+			height: 12px;
+			border-radius: 50%;
+			background: white;
+			box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+			cursor: pointer;
+		}
+
+		.radio-group {
+			display: flex;
+			gap: 8px;
+		}
+
+		.radio-item {
+			display: flex;
+			align-items: center;
+			gap: 3px;
+			cursor: pointer;
+			font-size: 12px;
+			color: var(--ios-text);
+		}
+
+		.radio-item input[type="radio"] {
+			width: 9px;
+			height: 9px;
+			accent-color: var(--ios-blue);
+		}
+
+		.action-btn {
+			width: 100%;
+			height: 24px;
+			border-radius: var(--radius-lg);
+			border: none;
+			background: var(--ios-blue);
+			color: white;
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+			margin-bottom: 6px;
+			transition: all 0.2s;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 4px;
+		}
+
+		.action-btn:active {
+			transform: scale(0.98);
+			opacity: 0.9;
+		}
+
+		.action-btn.secondary {
+			background: var(--ios-capsule-bg);
+			color: var(--ios-blue);
+		}
+
+		.version-footer {
+			position: fixed;
+			bottom: max(4px, env(safe-area-inset-bottom));
+			left: 50%;
+			transform: translateX(-50%);
+			z-index: 1;
+			font-size: 12px;
+			color: var(--ios-text-tertiary);
+			pointer-events: none;
+			text-align: center;
+		}
+
+		.version-footer .h5 { color: var(--ios-green); font-weight: 600; }
+		.version-footer .gg { color: var(--ios-red); font-weight: 600; }
+
+		.modal-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0,0,0,0.4);
+			backdrop-filter: blur(3px);
+			z-index: 1000;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			padding: 10px;
+		}
+
+		.modal-overlay.show {
+			display: flex;
+		}
+
+		.modal-content {
+			width: 100%;
+			max-width: 160px;
+			border-radius: var(--radius-xl);
+			padding: 10px;
+			animation: modalIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+		}
+
+		@keyframes modalIn {
+			from { opacity: 0; transform: scale(0.9) translateY(20px); }
+			to { opacity: 1; transform: scale(1) translateY(0); }
+		}
+
+		.modal-title {
+			font-size: 9px;
+			font-weight: 600;
+			text-align: center;
+			margin-bottom: 8px;
+		}
+
+		.modal-input {
+			width: 100%;
+			height: 22px;
+			padding: 0 7px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-capsule-bg);
+			font-size: 12px;
+			color: var(--ios-text);
+			margin-bottom: 8px;
+			text-align: center;
+		}
+
+		.modal-buttons {
+			display: flex;
+			gap: 6px;
+		}
+
+		.modal-btn {
+			flex: 1;
+			height: 22px;
+			border-radius: var(--radius-md);
+			border: none;
+			font-size: 12px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.modal-btn.cancel {
+			background: var(--ios-capsule-bg);
+			color: var(--ios-text);
+		}
+
+		.modal-btn.confirm {
+			background: var(--ios-blue);
+			color: white;
+		}
+
+		.type-grid {
+			display: grid;
+			grid-template-columns: repeat(3, 1fr);
+			gap: 4px;
+			margin-bottom: 8px;
+		}
+
+		.type-option {
+			height: 20px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-capsule-bg);
+			font-size: 12px;
+			font-weight: 500;
+			color: var(--ios-text);
+			cursor: pointer;
+			transition: all 0.2s;
+		}
+
+		.type-option.selected {
+			background: var(--ios-blue);
+			color: white;
+		}
+
+		.progress-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0,0,0,0.3);
+			backdrop-filter: blur(2px);
+			z-index: 3000;
+			display: none;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.progress-overlay.show {
+			display: flex;
+		}
+
+		.progress-box {
+			padding: 10px 16px;
+			border-radius: var(--radius-lg);
+			text-align: center;
+		}
+
+		.spinner {
+			width: 18px;
+			height: 18px;
+			border: 2px solid var(--ios-capsule-bg);
+			border-top-color: var(--ios-blue);
+			border-radius: 50%;
+			animation: spin 1s linear infinite;
+			margin: 0 auto 6px;
+		}
+
+		@keyframes spin {
+			to { transform: rotate(360deg); }
+		}
+
+		.script-list {
+			max-height: 150px;
+			overflow-y: auto;
+			margin-bottom: 8px;
+		}
+
+		.script-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 6px;
+			border-bottom: 0.5px solid var(--ios-separator);
+		}
+
+		.script-name {
+			font-size: 12px;
+			color: var(--ios-text);
+		}
+
+		.script-btn {
+			padding: 3px 6px;
+			border-radius: var(--radius-md);
+			border: none;
+			background: var(--ios-blue);
+			color: white;
+			font-size: 6px;
+			cursor: pointer;
+		}
+
+		.toast {
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%) scale(0.9);
+			background: rgba(0,0,0,0.8);
+			color: white;
+			padding: 6px 12px;
+			border-radius: var(--radius-lg);
+			font-size: 12px;
+			z-index: 4000;
+			opacity: 0;
+			transition: all 0.3s;
+			pointer-events: none;
+		}
+
+		.toast.show {
+			opacity: 1;
+			transform: translate(-50%, -50%) scale(1);
+		}
+
+		::-webkit-scrollbar {
+			width: 3px;
+			height: 3px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: var(--ios-capsule-bg-active);
+			border-radius: 1.5px;
+		}
+	</style>
+<base target="_blank">
+</head>
+<body>
+	<div class="app-container">
+		<nav class="top-nav glass-elevated">
+			<div class="nav-capsule">
+				<button class="nav-item" data-page="process" onclick="switchPage('process')">进程</button>
+				<button class="nav-item active" data-page="search" onclick="switchPage('search')">搜索</button>
+				<button class="nav-item" data-page="memory" onclick="switchPage('memory')">内存</button>
+				<button class="nav-item" data-page="settings" onclick="switchPage('settings')">设置</button>
+			</div>
+		</nav>
+
+		<div class="content-area">
+			<!-- Process Page -->
+			<div class="page" id="page-process">
+				<h1 class="page-title">选择进程</h1>
+				<div class="card glass">
+					<div class="card-section">
+						<span style="font-size: 12px; color: var(--ios-text-secondary);">点击选择目标进程</span>
+					</div>
+				</div>
+				<div class="card glass process-list" id="processList"></div>
+			</div>
+
+			<!-- Search Page -->
+			<div class="page active" id="page-search">
+				<h1 class="page-title">搜索页面</h1>
+				<div class="search-header">
+					<div class="search-input-row">
+						<input type="text" class="ios-input" id="searchInput" placeholder="输入数值 (支持多值: 100;200;500)">
+						<div class="icon-btn-row">
+							<button class="icon-btn primary" onclick="performSearch()" title="数值搜索"><i class="fa-solid fa-magnifying-glass"></i></button>
+							<button class="icon-btn primary" onclick="onClickSearchNearby()" title="邻近搜索"><i class="fa-solid fa-location-arrow"></i></button>
+							<button class="icon-btn primary" onclick="onClickClearResults()" title="清除结果"><i class="fa-solid fa-trash"></i></button>
+							<button class="icon-btn primary" onclick="onClickEditAll()" title="修改全部"><i class="fa-solid fa-pen-to-square"></i></button>
+							<button class="icon-btn primary" onclick="onClickRefreshResults()" title="刷新"><i class="fa-solid fa-rotate-right"></i></button>
+						</div>
+					</div>
+				</div>
+
+				<div class="type-selector glass" id="typeSelector">
+					<button class="type-btn" data-type="I8">I8</button>
+					<button class="type-btn" data-type="I16">I16</button>
+					<button class="type-btn active" data-type="I32">I32</button>
+					<button class="type-btn" data-type="I64">I64</button>
+					<button class="type-btn" data-type="F32">F32</button>
+					<button class="type-btn" data-type="F64">F64</button>
+				</div>
+
+				<div class="results-count" id="resultsCount" style="display: none;">共找到 0 条结果</div>
+
+				<div class="results-container glass" id="resultsContainer"></div>
+			</div>
+
+			<!-- Memory Page -->
+			<div class="page" id="page-memory">
+				<h1 class="page-title">内存查看</h1>
+				<div class="memory-header">
+					<div class="search-input-row">
+						<input type="text" class="ios-input" id="memoryAddressInput" placeholder="输入地址 (如: 0x100000000)">
+						<button class="icon-btn primary" onclick="jumpToMemory()">
+							<i class="fa-solid fa-arrow-right"></i>
+							<span>跳转</span>
+						</button>
+					</div>
+				</div>
+				<div class="type-selector glass" id="memoryTypeSelector">
+					<button class="type-btn" data-type="I8">I8</button>
+					<button class="type-btn" data-type="I16">I16</button>
+					<button class="type-btn active" data-type="I32">I32</button>
+					<button class="type-btn" data-type="I64">I64</button>
+					<button class="type-btn" data-type="F32">F32</button>
+					<button class="type-btn" data-type="F64">F64</button>
+				</div>
+				<div class="memory-list glass" id="memoryList">
+					<div style="text-align: center; padding: 20px; color: var(--ios-text-tertiary);">
+						<p style="font-size: 12px;">点击搜索页的眼睛图标查看内存</p>
+					</div>
+				</div>
+			</div>
+
+			<!-- Settings Page -->
+			<div class="page" id="page-settings">
+				<h1 class="page-title">设置</h1>
+
+				<div class="settings-tabs">
+					<button class="settings-tab active" onclick="switchSettingsTab('params')">参数</button>
+					<button class="settings-tab" onclick="switchSettingsTab('other')">其他</button>
+				</div>
+
+				<div class="settings-content">
+					<div class="settings-page active" id="settings-params">
+						<div class="card glass">
+							<div class="card-section">
+								<div class="setting-item">
+									<span class="setting-label">搜索下限</span>
+									<div class="setting-value">
+										<input type="text" class="setting-input" id="range_min" value="0x00000000">
+									</div>
+								</div>
+								<div class="setting-item">
+									<span class="setting-label">搜索上限</span>
+									<div class="setting-value">
+										<input type="text" class="setting-input" id="range_max" value="0x200000000">
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="card glass">
+							<div class="card-section">
+								<div class="setting-item">
+									<span class="setting-label">邻近范围</span>
+									<div class="setting-value">
+										<input type="text" class="setting-input" id="nearby_range" value="0x11">
+									</div>
+								</div>
+								<div class="setting-item">
+									<span class="setting-label">浮点精度</span>
+									<div class="setting-value">
+										<input type="text" class="setting-input" id="float_tolerance" value="0.0">
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="card glass">
+							<div class="card-section">
+								<div class="setting-item">
+									<span class="setting-label">数值类型</span>
+									<div class="setting-value">
+										<div class="radio-group">
+											<label class="radio-item">
+												<input type="radio" name="numtype" value="signed" checked>
+												<span>有符号</span>
+											</label>
+											<label class="radio-item">
+												<input type="radio" name="numtype" value="unsigned">
+												<span>无符号</span>
+											</label>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="settings-page" id="settings-other">
+						<button class="action-btn" onclick="onShowLoadScript(true)">
+							<i class="fa-solid fa-cubes"></i>
+							加载脚本
+						</button>
+						<button class="action-btn secondary" onclick="onClickMakeTweak()">
+							<i class="fa-solid fa-puzzle-piece"></i>
+							制作插件
+						</button>
+
+						<div class="card glass" style="margin-top: 4px;">
+							<div class="slider-container">
+								<div class="slider-label">
+									<span>背景透明度</span>
+									<span id="opacityValue">20%</span>
+								</div>
+								<input type="range" class="ios-slider" id="opacitySlider" min="0" max="100" value="20" oninput="updateOpacity(this.value)">
+							</div>
+						</div>
+
+						<div class="card glass">
+							<div class="slider-container">
+								<div class="slider-label">
+									<span>模糊程度</span>
+									<span id="blurValue">12px</span>
+								</div>
+								<input type="range" class="ios-slider" id="blurSlider" min="0" max="40" value="12" oninput="updateBlur(this.value)">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="version-footer">
+			<span class="h5">H5 </span><span class="gg">GG </span> v<span id="version">2.0</span>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="editModal">
+		<div class="modal-content glass-elevated">
+			<h3 class="modal-title">修改数值</h3>
+			<div class="type-grid" id="modalTypeGrid">
+				<button class="type-option" data-type="I8">I8</button>
+				<button class="type-option" data-type="I16">I16</button>
+				<button class="type-option" data-type="I32">I32</button>
+				<button class="type-option" data-type="I64">I64</button>
+				<button class="type-option" data-type="F32">F32</button>
+				<button class="type-option" data-type="F64">F64</button>
+			</div>
+			<input type="text" class="modal-input" id="editValueInput" placeholder="输入新数值">
+			<div class="modal-buttons">
+				<button class="modal-btn cancel" onclick="closeEditModal()">取消</button>
+				<button class="modal-btn confirm" onclick="confirmEdit()">确认</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="modal-overlay" id="scriptModal">
+		<div class="modal-content glass-elevated" style="max-width: 170px;">
+			<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+				<h3 class="modal-title" style="margin: 0;">加载脚本</h3>
+				<button onclick="closeScriptModal()" style="background: none; border: none; font-size: 10px; color: var(--ios-text-secondary); cursor: pointer;">
+					<i class="fa-solid fa-xmark"></i>
+				</button>
+			</div>
+			<div class="settings-tabs" style="margin-bottom: 6px; align-self: stretch;">
+				<button class="settings-tab active" style="flex: 1;" onclick="switchScriptTab('local')">本地</button>
+				<button class="settings-tab" style="flex: 1;" onclick="switchScriptTab('network')">网络</button>
+			</div>
+			<div id="localScriptPanel" class="settings-page active" style="max-width: none;">
+				<div class="script-list" id="scriptList"></div>
+				<button class="action-btn secondary" onclick="h5gg.pickScriptFile(onClickLoadScript)">
+					<i class="fa-solid fa-folder-open"></i>
+					浏览文件
+				</button>
+			</div>
+			<div id="networkScriptPanel" class="settings-page" style="max-width: none;">
+				<input type="text" class="modal-input" id="netScriptUrl" placeholder="输入JS/HTML链接" style="text-align: left; font-size: 12px;">
+				<div class="modal-buttons">
+					<button class="modal-btn confirm" onclick="loadNetworkScript('js')">加载JS</button>
+					<button class="modal-btn confirm" onclick="loadNetworkScript('h5')">加载H5</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="progress-overlay" id="progressOverlay">
+		<div class="progress-box glass-elevated">
+			<div class="spinner"></div>
+			<div style="font-size: 12px; color: var(--ios-text);">执行中...</div>
+		</div>
+	</div>
+
+	<div class="toast" id="toast"></div>
+
+	<script>
+
+		// Global state
+		let currentPage = 'search';
+		let currentEditAddress = null;
+		let currentEditType = 'I32';
+		let currentEditValue = '';
+		let selectedProcessPid = null;
+		let currentMemoryAddress = null;
+		let currentMemoryType = 'I32';
+
+		// Demo data matching original screenshot
+		const demoResults = [
+			{ address: '0x102345678', value: '112233', type: 'F64' },
+			{ address: '0x102345680', value: '112233', type: 'F64' },
+			{ address: '0x102345688', value: '112233', type: 'F64' },
+			{ address: '0x102345690', value: '112233', type: 'F64' },
+			{ address: '0x102345698', value: '112233', type: 'F64' },
+			{ address: '0x1023456A0', value: '112233', type: 'F64' },
+			{ address: '0x1023456A8', value: '112233', type: 'F64' },
+			{ address: '0x1023456B0', value: '112233', type: 'F64' },
+			{ address: '0x1023456B8', value: '112233', type: 'F64' },
+			{ address: '0x1023456C0', value: '112233', type: 'F64' },
+			{ address: '0x1023456C8', value: '112233', type: 'F64' },
+			{ address: '0x1023456D0', value: '112233', type: 'F64' },
+			{ address: '0x1023456D8', value: '112233', type: 'F64' },
+			{ address: '0x1023456E0', value: '112233', type: 'F64' },
+			{ address: '0x1023456E8', value: '112233', type: 'F64' },
+			{ address: '0x1023456F0', value: '0.112233112233112233', type: 'F64' }
+		];
+
+		document.addEventListener('DOMContentLoaded', function() {
+			loadDemoResults();
+
+			if (typeof h5gg !== 'undefined') {
+				document.getElementById('version').textContent = h5gg_internel_version || '2.0';
+				checkCrossProc();
+			}
+
+			setupTypeSelector('typeSelector', 'search');
+			setupTypeSelector('memoryTypeSelector', 'memory');
+			setupModalTypeSelector();
+		});
+
+		function loadDemoResults() {
+			const container = document.getElementById('resultsContainer');
+			container.innerHTML = '';
+			demoResults.forEach((item, index) => {
+				container.appendChild(createResultElement(index + 1, item.address, item.value, item.type));
+			});
+			document.getElementById('resultsCount').style.display = 'block';
+			document.getElementById('resultsCount').textContent = `共找到 ${demoResults.length} 条结果`;
+		}
+
+		function switchPage(page) {
+			currentPage = page;
+			document.querySelectorAll('.nav-item').forEach(item => {
+				item.classList.toggle('active', item.dataset.page === page);
+			});
+			document.querySelectorAll('.page').forEach(p => {
+				p.classList.toggle('active', p.id === 'page-' + page);
+			});
+			if (page === 'process' && typeof h5gg !== 'undefined') {
+				refreshProcList();
+			}
+		}
+
+		function switchSettingsTab(tab) {
+			document.querySelectorAll('.settings-tab').forEach(t => {
+				t.classList.toggle('active', t.textContent === (tab === 'params' ? '参数' : '其他'));
+			});
+			document.querySelectorAll('.settings-page').forEach(p => {
+				p.classList.toggle('active', p.id === 'settings-' + tab);
+			});
+		}
+
+		function switchScriptTab(tab) {
+			document.querySelectorAll('#scriptModal .settings-tab').forEach(t => {
+				t.classList.toggle('active', 
+					(tab === 'local' && t.textContent === '本地') || 
+					(tab === 'network' && t.textContent === '网络')
+				);
+			});
+			document.getElementById('localScriptPanel').classList.toggle('active', tab === 'local');
+			document.getElementById('networkScriptPanel').classList.toggle('active', tab === 'network');
+		}
+
+		function setupTypeSelector(containerId, context) {
+			const container = document.getElementById(containerId);
+			container.querySelectorAll('.type-btn').forEach(btn => {
+				btn.addEventListener('click', function() {
+					container.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+					this.classList.add('active');
+					if (context === 'memory') {
+						currentMemoryType = this.dataset.type;
+					}
+				});
+			});
+		}
+
+		function setupModalTypeSelector() {
+			const grid = document.getElementById('modalTypeGrid');
+			grid.querySelectorAll('.type-option').forEach(btn => {
+				btn.addEventListener('click', function() {
+					grid.querySelectorAll('.type-option').forEach(b => b.classList.remove('selected'));
+					this.classList.add('selected');
+					currentEditType = this.dataset.type;
+				});
+			});
+		}
+
+		function getSelectedType(containerId) {
+			const container = document.getElementById(containerId);
+			const active = container.querySelector('.type-btn.active');
+			return active ? active.dataset.type : 'I32';
+		}
+
+		function createResultElement(index, address, value, type) {
+			const div = document.createElement('div');
+			div.className = 'result-item';
+			div.dataset.address = address;
+			div.dataset.type = type;
+			div.dataset.value = value;
+			div.innerHTML = `
+				<div class="result-index">${index}</div>
+				<div class="result-content">
+					<div class="result-address">${address}</div>
+					<div class="result-value">${value}</div>
+				</div>
+				<div class="result-type">${type}</div>
+				<div class="result-actions">
+					<button class="result-action-btn" onclick="event.stopPropagation(); copyResultAddress('${address}')" title="复制地址">
+						<i class="fa-regular fa-copy"></i>
+					</button>
+					<button class="result-action-btn" onclick="event.stopPropagation(); viewMemoryFromResult('${address}', '${type}')" title="查看内存">
+						<i class="fa-solid fa-eye"></i>
+					</button>
+				</div>
+			`;
+			div.addEventListener('click', () => openEditModal(address, type, value));
+			return div;
+		}
+
+		function copyResultAddress(address) {
+			if (navigator.clipboard) {
+				navigator.clipboard.writeText(address).then(() => {
+					showToast('已复制: ' + address);
+				});
+			} else {
+				const input = document.createElement('input');
+				input.value = address;
+				document.body.appendChild(input);
+				input.select();
+				document.execCommand('copy');
+				document.body.removeChild(input);
+				showToast('已复制: ' + address);
+			}
+		}
+
+		function viewMemoryFromResult(address, type) {
+			currentMemoryAddress = address;
+			currentMemoryType = type;
+			switchPage('memory');
+			document.getElementById('memoryAddressInput').value = address;
+			document.querySelectorAll('#memoryTypeSelector .type-btn').forEach(btn => {
+				btn.classList.toggle('active', btn.dataset.type === type);
+			});
+			loadMemoryView(address, type);
+		}
+
+		function loadMemoryView(centerAddress, type) {
+			const list = document.getElementById('memoryList');
+			list.innerHTML = '';
+
+			let addr = parseInt(centerAddress, 16);
+			const typeSizes = { 'I8': 1, 'I16': 2, 'I32': 4, 'I64': 8, 'F32': 4, 'F64': 8, 'U8': 1, 'U16': 2, 'U32': 4, 'U64': 8 };
+			const step = typeSizes[type] || 4;
+			const startAddr = addr - (256 * step);
+
+			for (let i = 0; i < 512; i++) {
+				const itemAddr = startAddr + (i * step);
+				const itemAddrStr = '0x' + (itemAddr >>> 0).toString(16).toUpperCase().padStart(8, '0');
+				const offset = (i - 256) * step;
+				const offsetStr = (offset >= 0 ? '+' : '') + '0x' + Math.abs(offset).toString(16).toUpperCase();
+				const isCurrent = i === 256;
+
+				let value = '?';
+				if (typeof h5gg !== 'undefined') {
+					try {
+						const val = h5gg.getValue(itemAddrStr, h5ggType(type));
+						value = val !== undefined ? val : '?';
+					} catch(e) {
+						value = '?';
+					}
+				} else {
+					value = Math.floor(Math.random() * 1000000);
+				}
+
+				const item = document.createElement('div');
+				item.className = 'memory-item' + (isCurrent ? ' current' : '');
+				item.innerHTML = `
+					<div class="memory-offset">${offsetStr}</div>
+					<div class="memory-address">${itemAddrStr}</div>
+					<div class="memory-value">${value}</div>
+					<div class="memory-type">${type}</div>
+				`;
+				item.onclick = () => openEditModal(itemAddrStr, type, value);
+				list.appendChild(item);
+			}
+
+			setTimeout(() => {
+				const currentItem = list.querySelector('.memory-item.current');
+				if (currentItem) {
+					currentItem.scrollIntoView({ behavior: 'auto', block: 'center' });
+				}
+			}, 10);
+		}
+
+		function jumpToMemory() {
+			const address = document.getElementById('memoryAddressInput').value.trim();
+			if (!address) {
+				showToast('请输入地址');
+				return;
+			}
+			const type = getSelectedType('memoryTypeSelector');
+			currentMemoryAddress = address;
+			currentMemoryType = type;
+			loadMemoryView(address, type);
+		}
+
+		function checkCrossProc() {
+			if (typeof h5gg === 'undefined') return;
+			const procs = h5gg.getProcList();
+			if (procs) {
+				refreshProcList(procs);
+				if (!selectedProcessPid) {
+					switchPage('process');
+				}
+				setInterval(() => {
+					if (selectedProcessPid) {
+						const currentProcs = h5gg.getProcList();
+						const alive = currentProcs.some(p => p.pid == selectedProcessPid);
+						if (!alive) {
+							showToast('目标进程已结束，请重新选择');
+							selectedProcessPid = null;
+							if (currentPage === 'process') {
+								refreshProcList();
+							}
+						}
+					}
+				}, 1500);
+			}
+		}
+
+		function refreshProcList(procs) {
+			if (!procs && typeof h5gg !== 'undefined') {
+				procs = h5gg.getProcList();
+			}
+			if (!procs) return;
+
+			const list = document.getElementById('processList');
+			list.innerHTML = '';
+
+			procs.forEach(proc => {
+				const item = document.createElement('div');
+				item.className = 'process-item' + (proc.pid == selectedProcessPid ? ' selected' : '');
+				item.innerHTML = `
+					<div class="process-icon"><i class="fa-solid fa-cube"></i></div>
+					<div class="process-info">
+						<div class="process-name">${escapeHtml(proc.name)}</div>
+						<div class="process-id">PID: ${proc.pid}</div>
+					</div>
+					<div class="process-check"><i class="fa-solid fa-check"></i></div>
+				`;
+				item.onclick = () => selectProcess(proc.pid, proc.name, item);
+				list.appendChild(item);
+			});
+		}
+
+		function selectProcess(pid, name, element) {
+			if (typeof h5gg === 'undefined') {
+				showToast('h5gg not available');
+				return;
+			}
+			if (!h5gg.setTargetProc(pid)) {
+				showToast('无法选择该进程');
+				return;
+			}
+			selectedProcessPid = pid;
+			onClickClearResults();
+			document.querySelectorAll('.process-item').forEach(item => {
+				item.classList.remove('selected');
+			});
+			element.classList.add('selected');
+			showToast(`已选择: ${name}`);
+			setTimeout(() => switchPage('search'), 300);
+		}
+
+		function performSearch() {
+			const value = document.getElementById('searchInput').value.trim();
+			if (!value) {
+				showToast('请输入搜索数值');
+				return;
+			}
+			if (typeof h5gg === 'undefined') {
+				loadDemoResults();
+				return;
+			}
+			showProgress(true);
+			setTimeout(() => {
+				const type = h5ggType(getSelectedType('typeSelector'));
+				const memoryFrom = document.getElementById('range_min').value;
+				const memoryTo = document.getElementById('range_max').value;
+				h5gg.setFloatTolerance(document.getElementById('float_tolerance').value);
+				h5gg.searchNumber(value, type, memoryFrom, memoryTo);
+				onClickRefreshResults(true);
+				showProgress(false);
+			}, 100);
+		}
+
+		function onClickRefreshResults(clean) {
+			if (typeof h5gg === 'undefined') return;
+			const container = document.getElementById('resultsContainer');
+			if (clean) {
+				container.innerHTML = '';
+				container.dataset.currentCount = '0';
+			}
+			const count = h5gg.getResultsCount();
+			document.getElementById('resultsCount').style.display = 'block';
+			document.getElementById('resultsCount').textContent = `共找到 ${count} 条结果`;
+			let currentCount = parseInt(container.dataset.currentCount || '0');
+			if (isNaN(currentCount) || currentCount === 0) {
+				currentCount = 100;
+				container.dataset.currentCount = '100';
+			}
+			loadResults(0, currentCount);
+		}
+
+		function loadResults(from, count) {
+			if (typeof h5gg === 'undefined') return;
+			const results = h5gg.getResults(count, from);
+			const container = document.getElementById('resultsContainer');
+			results.forEach((result, i) => {
+				const displayValue = (result.type === 'F32' || result.type === 'F64') 
+					? `(${result.value})` 
+					: result.value;
+				container.appendChild(createResultElement(from + i + 1, result.address, displayValue, result.type));
+			});
+		}
+
+		function loadMoreResults() {
+			const container = document.getElementById('resultsContainer');
+			const currentCount = parseInt(container.dataset.currentCount || '0');
+			container.dataset.currentCount = (currentCount + 100).toString();
+			loadResults(currentCount, 100);
+		}
+
+		function onClickClearResults() {
+			document.getElementById('searchInput').value = '';
+			document.getElementById('resultsCount').style.display = 'none';
+			document.getElementById('resultsContainer').innerHTML = '';
+			document.getElementById('resultsContainer').dataset.currentCount = '0';
+			if (typeof h5gg !== 'undefined') {
+				h5gg.clearResults();
+			}
+		}
+
+		function onClickSearchNearby() {
+			const value = document.getElementById('searchInput').value.trim();
+			if (!value) {
+				showToast('请输入数值');
+				return;
+			}
+			if (typeof h5gg === 'undefined') {
+				showToast('Demo mode: nearby search');
+				return;
+			}
+			showProgress(true);
+			setTimeout(() => {
+				const type = h5ggType(getSelectedType('typeSelector'));
+				const nearbyRange = document.getElementById('nearby_range').value;
+				h5gg.setFloatTolerance(document.getElementById('float_tolerance').value);
+				h5gg.searchNearby(value, type, nearbyRange);
+				onClickRefreshResults(true);
+				showProgress(false);
+			}, 100);
+		}
+
+		function onClickEditAll() {
+			if (typeof h5gg === 'undefined') {
+				showToast('Demo mode: edit all');
+				return;
+			}
+			currentEditAddress = null;
+			currentEditType = getSelectedType('typeSelector');
+			currentEditValue = '';
+			document.getElementById('editValueInput').value = '';
+			document.getElementById('editModal').querySelector('.modal-title').textContent = '修改全部';
+			document.querySelectorAll('#modalTypeGrid .type-option').forEach(btn => {
+				btn.classList.toggle('selected', btn.dataset.type === currentEditType);
+			});
+			document.getElementById('editModal').classList.add('show');
+		}
+
+		function openEditModal(address, type, value) {
+			currentEditAddress = address;
+			currentEditType = type;
+			currentEditValue = value;
+			document.getElementById('editValueInput').value = value;
+			document.getElementById('editModal').querySelector('.modal-title').textContent = '修改数值';
+			document.querySelectorAll('#modalTypeGrid .type-option').forEach(btn => {
+				btn.classList.toggle('selected', btn.dataset.type === type);
+			});
+			document.getElementById('editModal').classList.add('show');
+			if (typeof h5gg !== 'undefined') {
+				const latest = h5gg.getValue(address, h5ggType(type));
+				if (latest !== undefined) {
+					document.getElementById('editValueInput').value = latest;
+				}
+			}
+		}
+
+		function closeEditModal() {
+			document.getElementById('editModal').classList.remove('show');
+		}
+
+		function confirmEdit() {
+			const value = document.getElementById('editValueInput').value;
+			const type = currentEditType;
+			if (currentEditAddress) {
+				if (typeof h5gg !== 'undefined') {
+					if (!h5gg.setValue(currentEditAddress, value, h5ggType(type))) {
+						showToast('修改失败，地址可能已失效');
+					} else {
+						showToast('修改成功');
+						onClickRefreshResults();
+					}
+				}
+			} else {
+				if (typeof h5gg !== 'undefined') {
+					const count = h5gg.editAll(value, h5ggType(type));
+					showToast(`成功修改 ${count} 个数据`);
+					onClickRefreshResults();
+				}
+			}
+			closeEditModal();
+		}
+
+		function onShowLoadScript(show) {
+			if (show) {
+				document.getElementById('scriptModal').classList.add('show');
+				if (typeof h5gg !== 'undefined') {
+					refreshLocalSrcipts();
+				}
+			} else {
+				closeScriptModal();
+			}
+		}
+
+		function closeScriptModal() {
+			document.getElementById('scriptModal').classList.remove('show');
+		}
+
+		function refreshLocalSrcipts() {
+			if (typeof h5gg === 'undefined') return;
+			const files = h5gg.getLocalScripts();
+			const list = document.getElementById('scriptList');
+			list.innerHTML = '';
+			if (files.length === 0) {
+				list.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--ios-text-secondary);">未找到脚本文件</div>';
+				return;
+			}
+			files.forEach(file => {
+				const item = document.createElement('div');
+				item.className = 'script-item';
+				item.innerHTML = `
+					<span class="script-name">${escapeHtml(file.name)}</span>
+					<button class="script-btn" onclick="onClickLoadScript('${file.path}')">加载</button>
+				`;
+				list.appendChild(item);
+			});
+		}
+
+		function loadNetworkScript(type) {
+			const url = document.getElementById('netScriptUrl').value.trim();
+			if (!url) {
+				showToast('请输入链接');
+				return;
+			}
+			onClickLoadScript(url, type);
+		}
+
+		function onClickLoadScript(url, type) {
+			if (!url) return;
+			if ((/^\w+\:/).test(url) === false) url = "file://" + url;
+			try {
+				url = new URL(url);
+				url.searchParams.append("_", Math.random());
+			} catch(e) {
+				showToast('无效的URL');
+				return;
+			}
+			closeScriptModal();
+			showProgress(true);
+			if (type === 'h5' || (!type && !/\.js$/.test(url.pathname))) {
+				window.location = url.href;
+				return;
+			}
+			const script = document.createElement('script');
+			script.type = 'text/javascript';
+			script.onload = function() {
+				showProgress(false);
+				showToast('脚本加载成功');
+			};
+			script.onerror = function() {
+				showProgress(false);
+				showToast('脚本加载失败');
+			};
+			script.src = url.href;
+			document.body.appendChild(script);
+		}
+
+		function onClickMakeTweak() {
+			if (typeof h5gg === 'undefined') {
+				showToast('Demo mode: make tweak');
+				return;
+			}
+			showToast('请选择图标文件');
+			h5gg.pickScriptFile(function(icon) {
+				showToast('请选择HTML文件');
+				h5gg.pickScriptFile(function(html) {
+					const result = h5gg.makeTweak(icon, html);
+					showToast(result);
+				}, ['public.html']);
+			}, ['public.image']);
+		}
+
+		function h5ggType(type) {
+			const numtype = document.querySelector('input[name="numtype"]:checked');
+			if (numtype && numtype.value === 'unsigned') {
+				const map = { 'I8': 'U8', 'I16': 'U16', 'I32': 'U32', 'I64': 'U64' };
+				return map[type] || type;
+			}
+			return type;
+		}
+
+		function showProgress(show) {
+			document.getElementById('progressOverlay').classList.toggle('show', show);
+		}
+
+		function showToast(message) {
+			const toast = document.getElementById('toast');
+			toast.textContent = message;
+			toast.classList.add('show');
+			setTimeout(() => toast.classList.remove('show'), 2000);
+		}
+
+		function escapeHtml(text) {
+			const div = document.createElement('div');
+			div.textContent = text;
+			return div.innerHTML;
+		}
+
+		function updateOpacity(val) {
+			document.getElementById('opacityValue').textContent = val + '%';
+			const opacity = val / 100;
+			document.documentElement.style.setProperty('--ios-surface', 
+				`rgba(${getComputedStyle(document.documentElement).getPropertyValue('--ios-surface') === 'rgba(255, 255, 255, 0.72)' ? '255, 255, 255' : '28, 28, 30'}, ${opacity})`);
+		}
+
+		function updateBlur(val) {
+			document.getElementById('blurValue').textContent = val + 'px';
+			document.documentElement.style.setProperty('--blur', val + 'px');
+		}
+
+		document.querySelectorAll('.modal-overlay').forEach(overlay => {
+			overlay.addEventListener('click', (e) => {
+				if (e.target === overlay) {
+					overlay.classList.remove('show');
+				}
+			});
+		});
+
+		document.getElementById('searchInput').addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') performSearch();
+		});
+
+		document.getElementById('editValueInput').addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') confirmEdit();
+		});
+
+		document.getElementById('memoryAddressInput').addEventListener('keypress', (e) => {
+			if (e.key === 'Enter') jumpToMemory();
+		});
+	</script>
+</body>
+</html>
