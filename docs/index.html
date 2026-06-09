@@ -558,6 +558,45 @@
 			border: 1px solid #f59e0b;
 		}
 
+		/* Toast 悬浮提示 */
+		.toast {
+			position: fixed;
+			bottom: 10%;
+			left: 50%;
+			transform: translateX(-50%);
+			padding: 12px 20px;
+			border-radius: 12px;
+			font-weight: 600;
+			font-size: 0.9rem;
+			z-index: 3000;
+			box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+			backdrop-filter: blur(20px);
+			-webkit-backdrop-filter: blur(20px);
+			opacity: 0;
+			transition: opacity 0.3s ease;
+			pointer-events: none;
+			max-width: calc(100% - 24px);
+			width: 822px;
+		}
+		.toast.show {
+			opacity: 1;
+		}
+		.toast-success {
+			background: rgba(10, 46, 26, 0.5);
+			color: #75fcb8;
+			border: 1px solid rgba(16, 185, 129, 0.6);
+		}
+		.toast-info {
+			background: rgba(10, 42, 58, 0.5);
+			color: #9ad5fd;
+			border: 1px solid rgba(59, 130, 246, 0.6);
+		}
+		.toast-warn {
+			background: rgba(58, 42, 26, 0.5);
+			color: #fcd375;
+			border: 1px solid rgba(245, 158, 11, 0.6);
+		}
+
 		/* 算法简介卡片（放最后） */
 		.algo-box {
 			background: #0b1628;
@@ -951,17 +990,185 @@
 				font-size: 0.85rem;
 			}
 		}
+
+		/* 悬浮球 */
+		.floating-ball {
+			position: fixed;
+			bottom: 20px;
+			right: 20px;
+			z-index: 999;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 10px;
+		}
+		.ball-main {
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			background: var(--card);
+			border: 2px solid var(--border);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+			transition: all 0.3s ease;
+		}
+		[data-theme="light"] .ball-main {
+			background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end));
+			box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+		}
+		.ball-main:hover {
+			transform: scale(1.1);
+			border-color: var(--accent);
+		}
+		.ball-main.expanded {
+			background: var(--accent);
+			border-color: var(--accent);
+		}
+		.ball-main.expanded .ball-icon {
+			color: #000;
+		}
+		.ball-icon {
+			font-size: 1.4rem;
+			transition: transform 0.3s ease;
+		}
+		.ball-main.expanded .ball-icon {
+			transform: rotate(45deg);
+		}
+		.ball-submenu {
+			display: flex;
+			flex-direction: column;
+			gap: 10px;
+			align-items: center;
+			max-height: 0;
+			overflow: hidden;
+			transition: max-height 0.3s ease, opacity 0.3s ease;
+			opacity: 0;
+		}
+		.ball-submenu.expanded {
+			max-height: 200px;
+			opacity: 1;
+		}
+		.ball-sub {
+			width: 46px;
+			height: 46px;
+			border-radius: 50%;
+			background: var(--card);
+			border: 2px solid var(--border);
+			box-sizing: border-box;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+			transition: all 0.2s ease;
+			font-size: 1.2rem;
+		}
+		[data-theme="light"] .ball-sub {
+			background: linear-gradient(135deg, var(--card-bg-start), var(--card-bg-end));
+			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+		}
+		.ball-sub:hover {
+			transform: scale(1.15);
+			border-color: var(--accent);
+		}
+
+		/* 悬浮卡片弹出层 */
+		.help-card-overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0, 0, 0, 0.5);
+			z-index: 2000;
+			display: none;
+			align-items: center;
+			justify-content: center;
+			padding: 20px;
+		}
+		.help-card-overlay.show {
+			display: flex;
+		}
+		.help-card {
+			background: rgba(19, 28, 49, 0.75);
+			backdrop-filter: blur(24px);
+			-webkit-backdrop-filter: blur(24px);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			border-radius: var(--radius);
+			width: 100%;
+			max-width: 800px;
+			max-height: 85vh;
+			display: flex;
+			flex-direction: column;
+			box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
+		}
+		[data-theme="light"] .help-card {
+			background: rgba(255, 255, 255, 0.7);
+			border-color: rgba(0, 0, 0, 0.1);
+		}
+		.help-card-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 14px 16px;
+			border-bottom: 1px solid var(--border);
+			flex-shrink: 0;
+		}
+		.help-card-header h2 {
+			font-size: 1rem;
+			font-weight: 700;
+			color: #fff;
+			margin: 0;
+		}
+		[data-theme="light"] .help-card-header h2 {
+			color: #1e293b;
+		}
+		.help-card-close {
+			background: rgba(255, 255, 255, 0.1);
+			border: none;
+			border-radius: 50%;
+			width: 32px;
+			height: 32px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			cursor: pointer;
+			color: var(--text);
+			font-size: 1rem;
+			transition: all 0.2s ease;
+		}
+		.help-card-close:hover {
+			background: rgba(255, 255, 255, 0.2);
+			transform: scale(1.1);
+		}
+		.help-card-content {
+			padding: 16px;
+			overflow-y: auto;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
+			flex: 1;
+			min-height: 0;
+		}
+		.help-card-content::-webkit-scrollbar {
+			display: none;
+		}
+		.help-card-content .synthesis-scroll {
+			max-height: none;
+		}
 	</style>
 </head>
 <body>
 	<div class="container">
-		<h1>Plants vs Zombies™ 3: Evolved</h1>
-		<!-- <p class="subtitle">向日葵 · 豌豆 · 卷心菜 · 坚果 · 地刺 &nbsp;|&nbsp; 填入二阶植物</p> -->
-
 		<!-- 合并后的主卡片 -->
 		<div class="card" id="suggestionCard">
 			<div class="main-card">
-				<h2>🧠 最优建议 🧠</h2>
+				<div style="display:flex;justify-content:space-between;align-items:center;">
+					<h2 style="margin:0;">🧠 最优建议 🧠</h2>
+					<span class="possible-count">🎯 可用排列：<strong id="possibleCount">11880</strong></span>
+				</div>
 				<div class="suggestion-container" id="solverSlots">
 					<div class="suggestion-column">
 						<div class="suggestion-slot" id="slot1">
@@ -987,9 +1194,6 @@
 							<span class="slot-value" id="s4">计算中</span>
 						</div>
 					</div>
-				</div>
-				<div style="text-align:center;">
-					<span class="possible-count">🎯 可用排列：<strong id="possibleCount">11880</strong></span>
 				</div>
 
 				<div class="divider"></div>
@@ -1029,68 +1233,85 @@
 			<p id="noSolverHistory" style="text-align:center;color:var(--text2);padding:16px;font-size:0.85rem;">暂无解码记录</p>
 		</div>
 
+		<h1>Plants vs Zombies™ 3: Evolved</h1>
+		<!-- <p class="subtitle">向日葵 · 豌豆 · 卷心菜 · 坚果 · 地刺 &nbsp;|&nbsp; 填入二阶植物</p> -->
+
+	</div>
+
+	<!-- 隐藏的帮助内容区域 -->
+	<div id="helpContent" style="display:none;">
 		<!-- 使用说明 -->
-		<div class="collapse-card">
-			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
-				<h2>📖 使用说明</h2>
-				<span class="collapse-arrow">▼</span>
-			</div>
-			<div class="collapse-content">
-				<div class="usage-steps">
-					<div class="usage-step">
-						<div class="step-number">1</div>
-						<div class="step-text">首次使用，将「最优建议」中的4个二阶植物，填入游戏里4个卡槽位置。</div>
-					</div>
-					<div class="usage-step">
-						<div class="step-number">2</div>
-						<div class="step-text">游戏会返回4个卡槽的结果（正确/错位/半对/全错），在「反馈区」选择对应结果。</div>
-					</div>
-					<div class="usage-step">
-						<div class="step-number">3</div>
-						<div class="step-text">点击「提交方案」按钮，系统会过滤错误方案，并给出新一轮的建议。</div>
-					</div>
-					<div class="usage-step">
-						<div class="step-number">4</div>
-						<div class="step-text">重复上述步骤，直到剩余排列为1，得到最终答案。</div>
-					</div>
-					<div class="usage-step">
-						<div class="step-number">5</div>
-						<div class="step-text">通常只需要2~4步，即可完成解码，通过游戏。</div>
-					</div>
+		<div id="usageContent">
+			<div class="usage-steps">
+				<div class="usage-step">
+					<div class="step-number">1</div>
+					<div class="step-text">首次使用，将「最优建议」中的4个二阶植物，填入游戏里4个卡槽位置。</div>
+				</div>
+				<div class="usage-step">
+					<div class="step-number">2</div>
+					<div class="step-text">游戏会返回4个卡槽的结果（正确/错位/半对/全错），在「反馈区」选择对应结果。</div>
+				</div>
+				<div class="usage-step">
+					<div class="step-number">3</div>
+					<div class="step-text">点击「提交方案」按钮，系统会过滤错误方案，并给出新一轮的建议。</div>
+				</div>
+				<div class="usage-step">
+					<div class="step-number">4</div>
+					<div class="step-text">重复上述步骤，直到剩余排列为1，得到最终答案。</div>
+				</div>
+				<div class="usage-step">
+					<div class="step-number">5</div>
+					<div class="step-text">通常只需要2~4步，即可完成解码，通过游戏。</div>
 				</div>
 			</div>
 		</div>
-
 		<!-- 算法说明 -->
-		<div class="collapse-card">
-			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
-				<h2>📘 算法说明：Minimax + 信息熵</h2>
-				<span class="collapse-arrow">▼</span>
+		<div id="algoContent">
+			感谢群友：@你既聪明又好看！ 基此二改；
+			<div class="algo-box" style="border-left:none;padding:0;margin-top:10px;background:transparent;">
+				1. 维护所有与反馈一致的可能答案集合 <code>S</code>（初始11880种）<br>
+				2. 对候选猜测，计算其对 <code>S</code> 的反馈分区<br>
+				3. 选择<strong>最坏情况剩余最少</strong>的猜测（Minimax）<br>
+				4. 平局时选<strong>期望剩余最少</strong>（信息熵最大）的<br>
+				5. 收到反馈后更新 <code>S</code>，重复直至 <code>|S|=1</code>
 			</div>
-			<div class="collapse-content">
-				<div class="algo-box" style="border-left:none;padding:0;margin-top:0;background:transparent;">
-					1. 维护所有与反馈一致的可能答案集合 <code>S</code>（初始11880种）<br>
-					2. 对候选猜测，计算其对 <code>S</code> 的反馈分区<br>
-					3. 选择<strong>最坏情况剩余最少</strong>的猜测（Minimax）<br>
-					4. 平局时选<strong>期望剩余最少</strong>（信息熵最大）的<br>
-					5. 收到反馈后更新 <code>S</code>，重复直至 <code>|S|=1</code>
+		</div>
+		<!-- 合成图鉴 -->
+		<div id="synthesisContent">
+			<div class="synthesis-scroll">
+				<div class="synthesis-grid" id="synthesisGridPopup">
+					<!-- 动态生成合成图鉴 -->
 				</div>
 			</div>
 		</div>
+	</div>
 
-		<!-- 合成图鉴 -->
-		<div class="collapse-card">
-			<div class="collapse-header" onclick="toggleCollapse(this.parentElement)">
-				<h2>📚 合成图鉴</h2>
-				<span class="collapse-arrow">▼</span>
+	<!-- 悬浮球 -->
+	<div id="floatingBall" class="floating-ball">
+		<div class="ball-main" id="ballMain" onclick="toggleBallMenu()">
+			<span class="ball-icon" id="ballIcon">📋</span>
+		</div>
+		<div class="ball-submenu" id="ballSubmenu">
+			<div class="ball-sub" onclick="openHelpCard('usage')">
+				<span>📖</span>
 			</div>
-			<div class="collapse-content">
-				<div class="synthesis-scroll">
-					<div class="synthesis-grid" id="synthesisGrid">
-						<!-- 动态生成合成图鉴 -->
-					</div>
-				</div>
+			<div class="ball-sub" onclick="openHelpCard('algo')">
+				<span>📘</span>
 			</div>
+			<div class="ball-sub" onclick="openHelpCard('synthesis')">
+				<span>📚</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- 悬浮卡片弹出层 -->
+	<div id="helpCardOverlay" class="help-card-overlay" onclick="closeHelpCard(event)">
+		<div class="help-card" id="helpCard" onclick="event.stopPropagation()">
+			<div class="help-card-header">
+				<h2 id="helpCardTitle"></h2>
+				<button class="help-card-close" onclick="closeHelpCard(event)">✕</button>
+			</div>
+			<div class="help-card-content" id="helpCardContent"></div>
 		</div>
 	</div>
 
@@ -1549,18 +1770,16 @@
 
 			function submitFeedback() {
 				if (solved) {
-					solverMsg.innerHTML =
-						'<div class="status-msg status-success">✅ 已确定最终序列，请点击重置。</div>';
+					showToast('✅ 已成功解码，点重置开启下一轮推荐。', 'success');
 					return;
 				}
 				if (!currentSuggestion) {
-					solverMsg.innerHTML = '<div class="status-msg status-warn">⚠️ 建议计算中，请稍后。</div>';
+					showToast('️最优建议计算中，请稍后。', 'info');
 					return;
 				}
 				const feedback = getSelectedFeedback();
 				if (!feedback) {
-					solverMsg.innerHTML =
-						'<div class="status-msg status-warn">⚠️ 请为所有四个区域选择反馈类型。</div>';
+					showToast('️需要为推荐组合选择反馈结果。', 'warn');
 					return;
 				}
 
@@ -1573,8 +1792,7 @@
 				}
 
 				if (newPossible.length === 0) {
-					solverMsg.innerHTML =
-						'<div class="status-msg status-warn">⚠️ 此结果与游戏规则冲突，可能选择错误。</div>';
+					showToast('⚠️ 此结果与游戏规则冲突，可能选择错误。', 'warn');
 					return;
 				}
 
@@ -2039,11 +2257,174 @@
 				card.classList.toggle('active');
 			};
 
+			// 悬浮球菜单展开/收起
+			let ballExpanded = false;
+			window.toggleBallMenu = function() {
+				ballExpanded = !ballExpanded;
+				const submenu = document.getElementById('ballSubmenu');
+				const ballMain = document.getElementById('ballMain');
+				if (ballExpanded) {
+					submenu.classList.add('expanded');
+					ballMain.classList.add('expanded');
+				} else {
+					submenu.classList.remove('expanded');
+					ballMain.classList.remove('expanded');
+				}
+			};
+
+			// 打开帮助卡片
+			window.openHelpCard = function(type) {
+				const overlay = document.getElementById('helpCardOverlay');
+				const card = document.getElementById('helpCard');
+				const title = document.getElementById('helpCardTitle');
+				const content = document.getElementById('helpCardContent');
+
+				// 关闭球菜单
+				ballExpanded = false;
+				document.getElementById('ballSubmenu').classList.remove('expanded');
+				document.getElementById('ballMain').classList.remove('expanded');
+
+				// 设置内容
+				if (type === 'usage') {
+					title.textContent = '📖 使用说明';
+					content.innerHTML = document.getElementById('usageContent').innerHTML;
+				} else if (type === 'algo') {
+					title.textContent = '📘 算法说明：Minimax + 信息熵';
+					content.innerHTML = document.getElementById('algoContent').innerHTML;
+				} else if (type === 'synthesis') {
+					title.textContent = '📚 合成图鉴';
+					content.innerHTML = '<div class="synthesis-scroll"><div class="synthesis-grid" id="synthesisGridInPopup"></div></div>';
+					// 初始化合成图鉴（如果还没初始化）
+					if (!window.synthesisGridInitialized) {
+						buildSynthesisGridToPopupContainer(document.getElementById('synthesisGridInPopup'));
+						window.synthesisGridInitialized = true;
+					}
+				}
+
+				overlay.classList.add('show');
+			};
+
+			// 关闭帮助卡片
+			window.closeHelpCard = function(event) {
+				if (event && event.target !== event.currentTarget) return;
+				const overlay = document.getElementById('helpCardOverlay');
+				overlay.classList.remove('show');
+			};
+
+			// 为popup生成合成图鉴（传入容器）
+			function buildSynthesisGridToPopupContainer(container) {
+				if (!container || container.children.length > 0) return;
+
+				const syntheses = [
+					{ key: 'AA', first1: 'A', first2: 'A' },
+					{ key: 'AB', first1: 'A', first2: 'B' },
+					{ key: 'AD', first1: 'A', first2: 'D' },
+					{ key: 'BB', first1: 'B', first2: 'B' },
+					{ key: 'BC', first1: 'B', first2: 'C' },
+					{ key: 'BD', first1: 'B', first2: 'D' },
+					{ key: 'BE', first1: 'B', first2: 'E' },
+					{ key: 'CC', first1: 'C', first2: 'C' },
+					{ key: 'CD', first1: 'C', first2: 'D' },
+					{ key: 'DD', first1: 'D', first2: 'D' },
+					{ key: 'DE', first1: 'D', first2: 'E' },
+					{ key: 'EE', first1: 'E', first2: 'E' }
+				];
+
+				syntheses.forEach(syn => {
+					const item = document.createElement('div');
+					item.className = 'synthesis-item';
+
+					const row = document.createElement('div');
+					row.className = 'synthesis-row';
+
+					const plant1 = document.createElement('div');
+					plant1.className = 'synthesis-plant';
+					const img1 = document.createElement('img');
+					img1.className = 'synthesis-img skeleton';
+					img1.alt = PLANT_NAMES[syn.first1] || syn.first1;
+					const name1 = document.createElement('div');
+					name1.className = 'synthesis-name';
+					name1.textContent = PLANT_NAMES[syn.first1] || syn.first1;
+					loadImageWithSkeleton(img1, FIRST_ORDER_IMAGES[syn.first1]);
+					plant1.appendChild(img1);
+					plant1.appendChild(name1);
+
+					const plus = document.createElement('span');
+					plus.className = 'synthesis-operator';
+					plus.textContent = '➕';
+
+					const plant2 = document.createElement('div');
+					plant2.className = 'synthesis-plant';
+					const img2 = document.createElement('img');
+					img2.className = 'synthesis-img skeleton';
+					img2.alt = PLANT_NAMES[syn.first2] || syn.first2;
+					const name2 = document.createElement('div');
+					name2.className = 'synthesis-name';
+					name2.textContent = PLANT_NAMES[syn.first2] || syn.first2;
+					loadImageWithSkeleton(img2, FIRST_ORDER_IMAGES[syn.first2]);
+					plant2.appendChild(img2);
+					plant2.appendChild(name2);
+
+					const equals = document.createElement('span');
+					equals.className = 'synthesis-operator';
+					equals.textContent = '🟰';
+
+					const plantResult = document.createElement('div');
+					plantResult.className = 'synthesis-plant';
+					const imgResult = document.createElement('img');
+					imgResult.className = 'synthesis-img skeleton';
+					imgResult.alt = SECOND_ORDER_NAMES[syn.key] || syn.key;
+					const nameResult = document.createElement('div');
+					nameResult.className = 'synthesis-name';
+					nameResult.textContent = SECOND_ORDER_NAMES[syn.key] || syn.key;
+					loadImageWithSkeleton(imgResult, SECOND_ORDER_IMAGES[syn.key]);
+					plantResult.appendChild(imgResult);
+					plantResult.appendChild(nameResult);
+
+					row.appendChild(plant1);
+					row.appendChild(plus);
+					row.appendChild(plant2);
+					row.appendChild(equals);
+					row.appendChild(plantResult);
+
+					item.appendChild(row);
+					container.appendChild(item);
+				});
+			}
+
 			window.addEventListener('DOMContentLoaded', init);
 			window.resetSolver = resetSolver;
 			window.submitFeedback = submitFeedback;
 			window.onFeedbackEdit = onFeedbackEdit;
 			window.replayFromHistory = replayFromHistory;
+
+			// Toast 提示函数
+			let toastTimeout = null;
+			window.showToast = function(message, type = 'warn') {
+				// 清除之前的 toast
+				const existingToast = document.querySelector('.toast');
+				if (existingToast) {
+					existingToast.remove();
+				}
+				if (toastTimeout) {
+					clearTimeout(toastTimeout);
+				}
+
+				// 创建新的 toast
+				const toast = document.createElement('div');
+				toast.className = `toast toast-${type}`;
+				toast.textContent = message;
+				document.body.appendChild(toast);
+
+				// 显示动画
+				setTimeout(() => toast.classList.add('show'), 10);
+
+				// 2 秒后消失
+				toastTimeout = setTimeout(() => {
+					toast.classList.remove('show');
+					setTimeout(() => toast.remove(), 300);
+				}, 2000);
+			};
 		})();
 	</script>
 </body>
